@@ -12,8 +12,10 @@ expression: tokens
         Equals,
     ),
     Ok(
-        StringConstant(
-            "hello",
+        Constant(
+            Str(
+                "hello",
+            ),
         ),
     ),
     Ok(
@@ -25,8 +27,10 @@ expression: tokens
         Equals,
     ),
     Ok(
-        StringConstant(
-            "lots of words here",
+        Constant(
+            Str(
+                "lots of words here",
+            ),
         ),
     ),
     Ok(
@@ -38,8 +42,10 @@ expression: tokens
         Equals,
     ),
     Ok(
-        StringConstant(
-            "this baby\ngoes over\n\nmultiple lines.\n",
+        Constant(
+            Str(
+                "this baby\ngoes over\n\nmultiple lines.\n",
+            ),
         ),
     ),
 ]

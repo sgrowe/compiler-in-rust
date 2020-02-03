@@ -12,8 +12,10 @@ expression: tokens
         Equals,
     ),
     Ok(
-        IntConstant(
-            5,
+        Constant(
+            Int(
+                5,
+            ),
         ),
     ),
     Ok(
@@ -25,18 +27,22 @@ expression: tokens
         Equals,
     ),
     Ok(
-        IntConstant(
-            5,
+        Constant(
+            Int(
+                5,
+            ),
         ),
     ),
     Ok(
-        Operator(
+        BinOp(
             Plus,
         ),
     ),
     Ok(
-        IntConstant(
-            2,
+        Constant(
+            Int(
+                2,
+            ),
         ),
     ),
     Ok(
@@ -53,13 +59,15 @@ expression: tokens
         ),
     ),
     Ok(
-        Operator(
+        BinOp(
             Minus,
         ),
     ),
     Ok(
-        IntConstant(
-            3,
+        Constant(
+            Int(
+                3,
+            ),
         ),
     ),
 ]

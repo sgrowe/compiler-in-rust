@@ -1,0 +1,48 @@
+---
+source: src/parser.rs
+expression: ast
+---
+Ok(
+    Ast {
+        statements: [
+            Assignment {
+                name: "x",
+                expr: Constant(
+                    Int(
+                        5,
+                    ),
+                ),
+            },
+            Assignment {
+                name: "y",
+                expr: BinaryOp {
+                    operator: Plus,
+                    left: Constant(
+                        Int(
+                            5,
+                        ),
+                    ),
+                    right: Constant(
+                        Int(
+                            2,
+                        ),
+                    ),
+                },
+            },
+            Assignment {
+                name: "z",
+                expr: BinaryOp {
+                    operator: Minus,
+                    left: Variable(
+                        "x",
+                    ),
+                    right: Constant(
+                        Int(
+                            3,
+                        ),
+                    ),
+                },
+            },
+        ],
+    },
+)

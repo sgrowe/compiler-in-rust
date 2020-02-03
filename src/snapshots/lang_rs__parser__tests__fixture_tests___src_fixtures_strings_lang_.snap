@@ -1,0 +1,34 @@
+---
+source: src/parser.rs
+expression: ast
+---
+Ok(
+    Ast {
+        statements: [
+            Assignment {
+                name: "my_first_string",
+                expr: Constant(
+                    Str(
+                        "hello",
+                    ),
+                ),
+            },
+            Assignment {
+                name: "string_with_multiple_words",
+                expr: Constant(
+                    Str(
+                        "lots of words here",
+                    ),
+                ),
+            },
+            Assignment {
+                name: "multiline_string",
+                expr: Constant(
+                    Str(
+                        "this baby\ngoes over\n\nmultiple lines.\n",
+                    ),
+                ),
+            },
+        ],
+    },
+)

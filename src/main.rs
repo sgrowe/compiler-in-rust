@@ -2,9 +2,12 @@ extern crate clap;
 
 use clap::{App, Arg};
 
+mod ast;
+mod parser;
 mod tokeniser;
+mod tokens;
 
-fn main() {
+fn main() -> std::io::Result<()> {
     let matches = App::new("Lang")
         .version("0.1.0")
         .about("Rust version of lang")
@@ -18,5 +21,11 @@ fn main() {
 
     let file = matches.value_of("file").unwrap();
 
-    println!("Hello, {}", file);
+    let source = std::fs::read_to_string(file)?;
+
+    let ast = self::parser::parse(&source);
+
+    println!("Hello, {:?}", ast);
+
+    Ok(())
 }

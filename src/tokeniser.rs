@@ -1,3 +1,4 @@
+use super::tokens::*;
 use std::str::CharIndices;
 
 pub fn tokenise<'a>(source: &'a str) -> Tokeniser<'a> {
@@ -11,6 +12,7 @@ pub fn tokenise<'a>(source: &'a str) -> Tokeniser<'a> {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct Tokeniser<'a> {
     source: &'a str,
     chars: CharIndices<'a>,
@@ -22,7 +24,7 @@ impl<'a> Iterator for Tokeniser<'a> {
     type Item = Result<Token<'a>, TokeniserError>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        use self::Operator::*;
+        use self::BinaryOperator::*;
         use Token::*;
         use TokeniserError::*;
 
@@ -39,8 +41,8 @@ impl<'a> Iterator for Tokeniser<'a> {
                     Some(Ok(RightArrow))
                 }
                 ('=', _) => Some(Ok(Equals)),
-                ('+', _) => Some(Ok(Operator(Plus))),
-                ('-', _) => Some(Ok(Operator(Minus))),
+                ('+', _) => Some(Ok(BinOp(Plus))),
+                ('-', _) => Some(Ok(BinOp(Minus))),
                 (_, _) => {
                     if c.is_alphabetic() {
                         Some(Ok(self.name(i)))
@@ -83,7 +85,7 @@ impl<'a> Tokeniser<'a> {
     fn string_constant(&mut self, start: usize) -> Result<Token<'a>, TokeniserError> {
         while let Some((i, c)) = self.step() {
             if c == '"' {
-                return Ok(Token::StringConstant(&self.source[start + 1..i]));
+                return Ok(Token::Constant(Constant::Str(&self.source[start + 1..i])));
             }
         }
 
@@ -129,39 +131,14 @@ impl<'a> Tokeniser<'a> {
 
         let num = &self.source[start..end];
 
-        if is_float {
-            Token::FloatConstant(num.parse().unwrap())
+        let constant = if is_float {
+            Constant::Float(num.parse().unwrap())
         } else {
-            Token::IntConstant(num.parse().unwrap())
-        }
+            Constant::Int(num.parse().unwrap())
+        };
+
+        Token::Constant(constant)
     }
-}
-
-#[derive(Debug, Copy, Clone)]
-pub enum Token<'a> {
-    RightArrow,
-    Equals,
-    Pipe,
-    Name(&'a str),
-    Keyword(Keyword),
-    Operator(Operator),
-    StringConstant(&'a str),
-    FloatConstant(f64),
-    IntConstant(i64),
-}
-
-#[derive(Debug, Copy, Clone)]
-pub enum Keyword {
-    Import,
-    Export,
-    Type,
-    Function,
-}
-
-#[derive(Debug, Copy, Clone)]
-pub enum Operator {
-    Plus,
-    Minus,
 }
 
 #[derive(Debug, Copy, Clone)]
