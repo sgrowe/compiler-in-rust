@@ -22,6 +22,7 @@ impl<'a> Iterator for Tokeniser<'a> {
     type Item = Result<Token<'a>, TokeniserError>;
 
     fn next(&mut self) -> Option<Self::Item> {
+        use self::Operator::*;
         use Token::*;
         use TokeniserError::*;
 
@@ -38,6 +39,8 @@ impl<'a> Iterator for Tokeniser<'a> {
                     Some(Ok(RightArrow))
                 }
                 ('=', _) => Some(Ok(Equals)),
+                ('+', _) => Some(Ok(Operator(Plus))),
+                ('-', _) => Some(Ok(Operator(Minus))),
                 (_, _) => {
                     if c.is_alphabetic() {
                         Some(Ok(self.name(i)))
@@ -54,12 +57,17 @@ impl<'a> Iterator for Tokeniser<'a> {
     }
 }
 
-const KEYWORDS: [(&str, Keyword); 4] = [
-    ("import", Keyword::Import),
-    ("export", Keyword::Export),
-    ("type", Keyword::Type),
-    ("fn", Keyword::Function),
-];
+fn get_matching_keyword(name: &str) -> Option<Keyword> {
+    use Keyword::*;
+
+    match name {
+        "import" => Some(Import),
+        "export" => Some(Export),
+        "type" => Some(Type),
+        "fn" => Some(Function),
+        _ => None,
+    }
+}
 
 impl<'a> Tokeniser<'a> {
     fn step(&mut self) -> Option<(usize, char)> {
@@ -97,10 +105,8 @@ impl<'a> Tokeniser<'a> {
 
         let name = &self.source[start..end];
 
-        KEYWORDS
-            .iter()
-            .find(|&(string, _)| string == &name)
-            .map(|&(_, keyword)| Token::Keyword(keyword))
+        get_matching_keyword(name)
+            .map(|keyword| Token::Keyword(keyword))
             .unwrap_or(Token::Name(name))
     }
 
@@ -138,6 +144,7 @@ pub enum Token<'a> {
     Pipe,
     Name(&'a str),
     Keyword(Keyword),
+    Operator(Operator),
     StringConstant(&'a str),
     FloatConstant(f64),
     IntConstant(i64),
@@ -152,6 +159,12 @@ pub enum Keyword {
 }
 
 #[derive(Debug, Copy, Clone)]
+pub enum Operator {
+    Plus,
+    Minus,
+}
+
+#[derive(Debug, Copy, Clone)]
 pub enum TokeniserError {
     UnterminatedString,
 }
@@ -161,10 +174,12 @@ mod tests {
     use super::*;
     use insta::assert_debug_snapshot;
     use std::fs;
+    use test_case::test_case;
 
-    #[test]
-    fn test_add() -> std::io::Result<()> {
-        let contents = fs::read_to_string("src/fixtures/strings.lang")?;
+    #[test_case("src/fixtures/strings.lang")]
+    #[test_case("src/fixtures/maths.lang")]
+    fn fixture_tests(fixture_file_name: &str) -> std::io::Result<()> {
+        let contents = fs::read_to_string(fixture_file_name)?;
 
         let tokens = tokenise(&contents).collect::<Vec<_>>();
 

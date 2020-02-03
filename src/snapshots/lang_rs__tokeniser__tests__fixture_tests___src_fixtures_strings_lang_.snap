@@ -29,4 +29,17 @@ expression: tokens
             "lots of words here",
         ),
     ),
+    Ok(
+        Name(
+            "multiline_string",
+        ),
+    ),
+    Ok(
+        Equals,
+    ),
+    Ok(
+        StringConstant(
+            "this baby\ngoes over\n\nmultiple lines.\n",
+        ),
+    ),
 ]
