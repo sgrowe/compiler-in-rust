@@ -1,0 +1,32 @@
+---
+source: src/tokeniser.rs
+expression: tokens
+---
+[
+    Ok(
+        Name(
+            "my_first_string",
+        ),
+    ),
+    Ok(
+        Equals,
+    ),
+    Ok(
+        StringConstant(
+            "hello",
+        ),
+    ),
+    Ok(
+        Name(
+            "string_with_multiple_words",
+        ),
+    ),
+    Ok(
+        Equals,
+    ),
+    Ok(
+        StringConstant(
+            "lots of words here",
+        ),
+    ),
+]
