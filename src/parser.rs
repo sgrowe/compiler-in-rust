@@ -164,9 +164,9 @@ mod tests {
     use std::fs;
     use test_case::test_case;
 
-    #[test_case("src/fixtures/strings.lang")]
-    #[test_case("src/fixtures/maths.lang")]
-    fn fixture_tests(fixture_file_name: &str) -> std::io::Result<()> {
+    #[test_case("src/fixtures/strings.lang"; "strings")]
+    #[test_case("src/fixtures/maths.lang"; "maths")]
+    fn fixtures(fixture_file_name: &str) -> std::io::Result<()> {
         let contents = fs::read_to_string(fixture_file_name)?;
 
         let ast = parse(&contents);
