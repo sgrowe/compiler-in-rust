@@ -53,6 +53,7 @@ impl<'a> Iterator for Tokeniser<'a> {
                 ('+', _) => Some(Ok(BinOp(Plus))),
                 ('*', _) => Some(Ok(BinOp(Multiply))),
                 ('-', _) => Some(Ok(BinOp(Minus))),
+                (',', _) => Some(Ok(Comma)),
                 ('=', Some('>')) => {
                     self.step();
                     Some(Ok(RightArrow))
