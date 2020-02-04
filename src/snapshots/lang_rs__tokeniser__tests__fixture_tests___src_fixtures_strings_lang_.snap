@@ -35,6 +35,21 @@ expression: tokens
     ),
     Ok(
         Name(
+            "empty_string",
+        ),
+    ),
+    Ok(
+        Equals,
+    ),
+    Ok(
+        Constant(
+            Str(
+                "",
+            ),
+        ),
+    ),
+    Ok(
+        Name(
             "multiline_string",
         ),
     ),

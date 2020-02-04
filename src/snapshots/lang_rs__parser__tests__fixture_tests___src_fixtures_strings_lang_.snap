@@ -22,6 +22,14 @@ Ok(
                 ),
             },
             Assignment {
+                name: "empty_string",
+                expr: Constant(
+                    Str(
+                        "",
+                    ),
+                ),
+            },
+            Assignment {
                 name: "multiline_string",
                 expr: Constant(
                     Str(

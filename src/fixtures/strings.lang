@@ -6,7 +6,7 @@ my_first_string = "hello"
 string_with_multiple_words = "lots of words here"
 
 
-
+empty_string = ""
 
 multiline_string = "this baby
 goes over
