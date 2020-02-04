@@ -53,10 +53,12 @@ impl<'a> Parser<'a> {
     }
 
     fn statement(&mut self) -> Result<Statement<'a>, ParseError<'a>> {
+        use super::keywords::Keyword::*;
+
         if let Some(token) = self.step()? {
             match (token, self.peek_next_token()?) {
                 (Name(name), _) => self.named_statement(name),
-                (Keyword(super::keywords::Keyword::Function), _) => self.function(),
+                (Keyword(Function), _) => self.function(),
                 (token, _) => Err(ParseError::UnexpectedToken(token)),
             }
         } else {
