@@ -70,4 +70,27 @@ expression: tokens
             ),
         ),
     ),
+    Ok(
+        Name(
+            "z",
+        ),
+    ),
+    Ok(
+        Equals,
+    ),
+    Ok(
+        Name(
+            "y",
+        ),
+    ),
+    Ok(
+        BinOp(
+            Multiply,
+        ),
+    ),
+    Ok(
+        Name(
+            "z",
+        ),
+    ),
 ]

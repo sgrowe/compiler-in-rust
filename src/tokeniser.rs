@@ -1,3 +1,4 @@
+use super::keywords::*;
 use super::tokens::*;
 use std::str::CharIndices;
 
@@ -7,8 +8,9 @@ pub fn tokenise<'a>(source: &'a str) -> Tokeniser<'a> {
 
     Tokeniser {
         source,
-        next_char,
         chars,
+        next_char,
+        indent_stack: Vec::with_capacity(8),
     }
 }
 
@@ -16,8 +18,9 @@ pub fn tokenise<'a>(source: &'a str) -> Tokeniser<'a> {
 pub struct Tokeniser<'a> {
     source: &'a str,
     chars: CharIndices<'a>,
-    // the next char in the sequence so we can lookahead one char without consuming the iterator
+    // the next char in the sequence so we can look ahead one char without consuming the iterator
     next_char: Option<(usize, char)>,
+    indent_stack: Vec<u16>, // u16 as hopefully people wont use many more that 65,000 spaces of indentation
 }
 
 impl<'a> Iterator for Tokeniser<'a> {
@@ -26,23 +29,35 @@ impl<'a> Iterator for Tokeniser<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         use self::BinaryOperator::*;
         use Token::*;
-        use TokeniserError::*;
 
         while let Some((i, c)) = self.step() {
-            if c.is_whitespace() {
-                continue;
+            match c {
+                ' ' => {
+                    continue;
+                }
+                '\n' | '\r' => {
+                    if let Some(token) = self.newline() {
+                        return Some(Ok(token));
+                    }
+
+                    continue;
+                }
+                _ => {}
             }
 
             return match (c, self.peek_next_char()) {
+                ('(', _) => Some(Ok(OpenParen)),
+                (')', _) => Some(Ok(CloseParen)),
                 ('"', _) => Some(self.string_constant(i)),
                 ('|', _) => Some(Ok(Pipe)),
+                ('+', _) => Some(Ok(BinOp(Plus))),
+                ('*', _) => Some(Ok(BinOp(Multiply))),
+                ('-', _) => Some(Ok(BinOp(Minus))),
                 ('=', Some('>')) => {
                     self.step();
                     Some(Ok(RightArrow))
                 }
                 ('=', _) => Some(Ok(Equals)),
-                ('+', _) => Some(Ok(BinOp(Plus))),
-                ('-', _) => Some(Ok(BinOp(Minus))),
                 (_, _) => {
                     if c.is_alphabetic() {
                         Some(Ok(self.name(i)))
@@ -55,19 +70,11 @@ impl<'a> Iterator for Tokeniser<'a> {
             };
         }
 
+        while let Some(_) = self.indent_stack.pop() {
+            return Some(Ok(IndentDecr));
+        }
+
         None
-    }
-}
-
-fn get_matching_keyword(name: &str) -> Option<Keyword> {
-    use Keyword::*;
-
-    match name {
-        "import" => Some(Import),
-        "export" => Some(Export),
-        "type" => Some(Type),
-        "fn" => Some(Function),
-        _ => None,
     }
 }
 
@@ -80,6 +87,43 @@ impl<'a> Tokeniser<'a> {
 
     fn peek_next_char(&self) -> Option<char> {
         self.next_char.map(|(_, c)| c)
+    }
+
+    fn current_indent(&self) -> u16 {
+        self.indent_stack.last().copied().unwrap_or(0)
+    }
+
+    fn newline(&mut self) -> Option<Token<'a>> {
+        use Token::{IndentDecr, IndentIncr};
+
+        let mut indent = 0;
+
+        while let Some(c) = self.peek_next_char() {
+            match c {
+                ' ' => {
+                    indent += 1;
+                }
+                '\n' | '\r' => {
+                    // ignore blank lines
+                    indent = 0;
+                }
+                _ => {
+                    return if indent > self.current_indent() {
+                        self.indent_stack.push(indent);
+                        Some(IndentIncr)
+                    } else if indent < self.current_indent() {
+                        self.indent_stack.pop();
+                        Some(IndentDecr)
+                    } else {
+                        None
+                    };
+                }
+            }
+
+            self.step();
+        }
+
+        None
     }
 
     fn string_constant(&mut self, start: usize) -> Result<Token<'a>, TokeniserError> {
@@ -155,6 +199,7 @@ mod tests {
 
     #[test_case("src/fixtures/strings.lang"; "strings")]
     #[test_case("src/fixtures/maths.lang"; "maths")]
+    #[test_case("src/fixtures/functions.lang"; "functions")]
     fn fixtures(fixture_file_name: &str) -> std::io::Result<()> {
         let contents = fs::read_to_string(fixture_file_name)?;
 

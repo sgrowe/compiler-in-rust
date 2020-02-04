@@ -40,7 +40,7 @@ impl<'a> Parser<'a> {
     }
 
     fn parse(&mut self) -> Result<Ast<'a>, ParseError<'a>> {
-        use super::tokens::Token::*;
+        use Token::*;
 
         let mut ast = Ast {
             statements: Vec::new(),
@@ -76,31 +76,14 @@ impl<'a> Parser<'a> {
 
         let mut token = self.peek_next_token()?;
 
-        println!("Two Ts: {:?} {:?}", t, token);
-
-        // let mut token = match self.next_token()? {
-        //     Some(Constant(c)) => Expression::Constant(c),
-        //     Some(Name(name)) => Expression::Variable(name),
-        //     Some(token) => return Err(ParseError::UnexpectedToken(token)),
-        //     None => return Err(ParseError::UnexpectedEndOfInput),
-        // };
-
         let mut left = null_denotation(t);
 
         while right_binding_power < token.map(left_binding_power).unwrap_or(0) {
             t = token.map_or(Err(ParseError::UnexpectedEndOfInput), |t| Ok(t))?;
 
-            println!("T: {:?}", t);
-
             self.step()?;
 
             token = self.peek_next_token()?;
-
-            // self
-            //     .step()?
-            //     .map_or(Err(ParseError::UnexpectedEndOfInput), |t| Ok(t))?;
-
-            println!("token: {:?}", token);
 
             left = self.left_denotation(t, left)?;
         }
@@ -113,13 +96,9 @@ impl<'a> Parser<'a> {
         token: Token<'a>,
         left: Expression<'a>,
     ) -> Result<Expression<'a>, ParseError<'a>> {
-        println!("Left denot: {:?}", token);
-
         match token {
             Token::BinOp(operator) => {
                 let right = self.expression(left_binding_power(token))?;
-
-                println!("Right: {:?}", right);
 
                 Ok(Expression::BinaryOp {
                     operator,
@@ -133,8 +112,6 @@ impl<'a> Parser<'a> {
 }
 
 fn null_denotation<'a>(token: Token<'a>) -> Expression<'a> {
-    println!("null d: {:?}", token);
-
     match token {
         Token::Constant(c) => Expression::Constant(c),
         Token::Name(name) => Expression::Variable(name),
@@ -146,6 +123,7 @@ fn left_binding_power<'a>(token: Token<'a>) -> u32 {
     match token {
         Token::BinOp(BinaryOperator::Plus) => 10,
         Token::BinOp(BinaryOperator::Minus) => 10,
+        Token::BinOp(BinaryOperator::Multiply) => 20,
         _ => 0,
     }
 }

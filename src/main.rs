@@ -3,6 +3,7 @@ extern crate clap;
 use clap::{App, Arg};
 
 mod ast;
+mod keywords;
 mod parser;
 mod tokeniser;
 mod tokens;

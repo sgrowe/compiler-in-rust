@@ -1,0 +1,18 @@
+
+
+fn my_first_func()
+    x = 5
+    y = x * 2
+    y
+
+
+
+
+
+fn func_with_closure()
+    x = 5
+
+    fn top_stuff()
+        x * 2
+
+    top_stuff

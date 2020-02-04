@@ -43,6 +43,18 @@ Ok(
                     ),
                 },
             },
+            Assignment {
+                name: "z",
+                expr: BinaryOp {
+                    operator: Multiply,
+                    left: Variable(
+                        "y",
+                    ),
+                    right: Variable(
+                        "z",
+                    ),
+                },
+            },
         ],
     },
 )
