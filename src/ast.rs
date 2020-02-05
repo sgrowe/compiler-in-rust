@@ -3,27 +3,46 @@ use super::tokens::*;
 
 #[derive(Debug, Clone)]
 pub struct Ast<'a> {
-    pub statements: Vec<Statement<'a>>,
+    statements: Vec<TopLevelStatement<'a>>,
 }
 
 impl<'a> Ast<'a> {
-    pub fn append_statement(&mut self, statement: Statement<'a>) {
+    pub fn new() -> Ast<'a> {
+        Ast {
+            statements: Vec::new(),
+        }
+    }
+
+    pub fn append_statement(&mut self, statement: TopLevelStatement<'a>) {
         self.statements.push(statement)
     }
 }
 
 #[derive(Debug, Clone)]
-pub enum Statement<'a> {
+pub enum Declaration<'a> {
     Assignment {
         name: &'a str,
         expr: Expression<'a>,
     },
-    BareExpression(Expression<'a>),
     FunctionDecl {
         name: &'a str,
         arguments: FunctionArgsList<'a>,
-        body: Vec<Statement<'a>>,
+        body: Vec<FuncBodyStatement<'a>>,
     },
+}
+
+#[derive(Debug, Clone)]
+pub enum TopLevelStatement<'a> {
+    Declaration {
+        decl: Declaration<'a>,
+        exported: bool,
+    },
+}
+
+#[derive(Debug, Clone)]
+pub enum FuncBodyStatement<'a> {
+    Declaration(Declaration<'a>),
+    BareExpression(Expression<'a>),
 }
 
 #[derive(Debug, Clone)]

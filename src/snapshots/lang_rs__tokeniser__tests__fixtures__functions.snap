@@ -153,6 +153,11 @@ expression: tokens
     ),
     Ok(
         Keyword(
+            Export,
+        ),
+    ),
+    Ok(
+        Keyword(
             Function,
         ),
     ),

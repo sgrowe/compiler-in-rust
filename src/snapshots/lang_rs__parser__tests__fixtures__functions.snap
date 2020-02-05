@@ -5,63 +5,27 @@ expression: ast
 Ok(
     Ast {
         statements: [
-            FunctionDecl {
-                name: "my_first_func",
-                arguments: FunctionArgsList {
-                    args: [],
-                },
-                body: [
-                    Assignment {
-                        name: "x",
-                        expr: Constant(
-                            Int(
-                                5,
-                            ),
-                        ),
+            Declaration {
+                decl: FunctionDecl {
+                    name: "my_first_func",
+                    arguments: FunctionArgsList {
+                        args: [],
                     },
-                    Assignment {
-                        name: "y",
-                        expr: BinaryOp {
-                            operator: Multiply,
-                            left: Variable(
-                                "x",
-                            ),
-                            right: Constant(
-                                Int(
-                                    2,
+                    body: [
+                        Declaration(
+                            Assignment {
+                                name: "x",
+                                expr: Constant(
+                                    Int(
+                                        5,
+                                    ),
                                 ),
-                            ),
-                        },
-                    },
-                    BareExpression(
-                        Variable(
-                            "y",
+                            },
                         ),
-                    ),
-                ],
-            },
-            FunctionDecl {
-                name: "func_with_closure",
-                arguments: FunctionArgsList {
-                    args: [],
-                },
-                body: [
-                    Assignment {
-                        name: "x",
-                        expr: Constant(
-                            Int(
-                                5,
-                            ),
-                        ),
-                    },
-                    FunctionDecl {
-                        name: "top_stuff",
-                        arguments: FunctionArgsList {
-                            args: [],
-                        },
-                        body: [
-                            BareExpression(
-                                BinaryOp {
+                        Declaration(
+                            Assignment {
+                                name: "y",
+                                expr: BinaryOp {
                                     operator: Multiply,
                                     left: Variable(
                                         "x",
@@ -72,74 +36,130 @@ Ok(
                                         ),
                                     ),
                                 },
-                            ),
-                        ],
-                    },
-                    BareExpression(
-                        Variable(
-                            "top_stuff",
+                            },
                         ),
-                    ),
-                ],
-            },
-            FunctionDecl {
-                name: "function_with_arguments",
-                arguments: FunctionArgsList {
-                    args: [
-                        FunctionArg {
-                            name: "x",
-                        },
-                        FunctionArg {
-                            name: "y",
-                        },
-                    ],
-                },
-                body: [
-                    BareExpression(
-                        BinaryOp {
-                            operator: Multiply,
-                            left: Variable(
-                                "x",
-                            ),
-                            right: Variable(
+                        BareExpression(
+                            Variable(
                                 "y",
                             ),
-                        },
-                    ),
-                ],
-            },
-            FunctionDecl {
-                name: "single_argument_func",
-                arguments: FunctionArgsList {
-                    args: [
-                        FunctionArg {
-                            name: "x",
-                        },
+                        ),
                     ],
                 },
-                body: [
-                    BareExpression(
-                        BinaryOp {
-                            operator: Plus,
-                            left: BinaryOp {
-                                operator: Multiply,
-                                left: Constant(
+                exported: false,
+            },
+            Declaration {
+                decl: FunctionDecl {
+                    name: "func_with_closure",
+                    arguments: FunctionArgsList {
+                        args: [],
+                    },
+                    body: [
+                        Declaration(
+                            Assignment {
+                                name: "x",
+                                expr: Constant(
                                     Int(
-                                        2,
+                                        5,
                                     ),
                                 ),
-                                right: Variable(
+                            },
+                        ),
+                        Declaration(
+                            FunctionDecl {
+                                name: "top_stuff",
+                                arguments: FunctionArgsList {
+                                    args: [],
+                                },
+                                body: [
+                                    BareExpression(
+                                        BinaryOp {
+                                            operator: Multiply,
+                                            left: Variable(
+                                                "x",
+                                            ),
+                                            right: Constant(
+                                                Int(
+                                                    2,
+                                                ),
+                                            ),
+                                        },
+                                    ),
+                                ],
+                            },
+                        ),
+                        BareExpression(
+                            Variable(
+                                "top_stuff",
+                            ),
+                        ),
+                    ],
+                },
+                exported: false,
+            },
+            Declaration {
+                decl: FunctionDecl {
+                    name: "function_with_arguments",
+                    arguments: FunctionArgsList {
+                        args: [
+                            FunctionArg {
+                                name: "x",
+                            },
+                            FunctionArg {
+                                name: "y",
+                            },
+                        ],
+                    },
+                    body: [
+                        BareExpression(
+                            BinaryOp {
+                                operator: Multiply,
+                                left: Variable(
                                     "x",
                                 ),
-                            },
-                            right: Constant(
-                                Int(
-                                    1,
+                                right: Variable(
+                                    "y",
                                 ),
-                            ),
-                        },
-                    ),
-                ],
+                            },
+                        ),
+                    ],
+                },
+                exported: true,
+            },
+            Declaration {
+                decl: FunctionDecl {
+                    name: "single_argument_func",
+                    arguments: FunctionArgsList {
+                        args: [
+                            FunctionArg {
+                                name: "x",
+                            },
+                        ],
+                    },
+                    body: [
+                        BareExpression(
+                            BinaryOp {
+                                operator: Plus,
+                                left: BinaryOp {
+                                    operator: Multiply,
+                                    left: Constant(
+                                        Int(
+                                            2,
+                                        ),
+                                    ),
+                                    right: Variable(
+                                        "x",
+                                    ),
+                                },
+                                right: Constant(
+                                    Int(
+                                        1,
+                                    ),
+                                ),
+                            },
+                        ),
+                    ],
+                },
+                exported: false,
             },
         ],
     },

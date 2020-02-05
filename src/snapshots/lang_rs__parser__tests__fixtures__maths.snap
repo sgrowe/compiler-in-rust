@@ -5,71 +5,83 @@ expression: ast
 Ok(
     Ast {
         statements: [
-            Assignment {
-                name: "x",
-                expr: Constant(
-                    Int(
-                        5,
-                    ),
-                ),
-            },
-            Assignment {
-                name: "y",
-                expr: BinaryOp {
-                    operator: Plus,
-                    left: Constant(
+            Declaration {
+                decl: Assignment {
+                    name: "x",
+                    expr: Constant(
                         Int(
                             5,
                         ),
                     ),
-                    right: Constant(
-                        Int(
-                            2,
-                        ),
-                    ),
                 },
+                exported: false,
             },
-            Assignment {
-                name: "z",
-                expr: BinaryOp {
-                    operator: Minus,
-                    left: Variable(
-                        "x",
-                    ),
-                    right: Constant(
-                        Int(
-                            3,
-                        ),
-                    ),
-                },
-            },
-            Assignment {
-                name: "z",
-                expr: BinaryOp {
-                    operator: Minus,
-                    left: BinaryOp {
+            Declaration {
+                decl: Assignment {
+                    name: "y",
+                    expr: BinaryOp {
                         operator: Plus,
                         left: Constant(
+                            Int(
+                                5,
+                            ),
+                        ),
+                        right: Constant(
                             Int(
                                 2,
                             ),
                         ),
-                        right: BinaryOp {
-                            operator: Multiply,
-                            left: Variable(
-                                "y",
-                            ),
-                            right: Variable(
-                                "z",
-                            ),
-                        },
                     },
-                    right: Constant(
-                        Int(
-                            4,
-                        ),
-                    ),
                 },
+                exported: false,
+            },
+            Declaration {
+                decl: Assignment {
+                    name: "z",
+                    expr: BinaryOp {
+                        operator: Minus,
+                        left: Variable(
+                            "x",
+                        ),
+                        right: Constant(
+                            Int(
+                                3,
+                            ),
+                        ),
+                    },
+                },
+                exported: false,
+            },
+            Declaration {
+                decl: Assignment {
+                    name: "z",
+                    expr: BinaryOp {
+                        operator: Minus,
+                        left: BinaryOp {
+                            operator: Plus,
+                            left: Constant(
+                                Int(
+                                    2,
+                                ),
+                            ),
+                            right: BinaryOp {
+                                operator: Multiply,
+                                left: Variable(
+                                    "y",
+                                ),
+                                right: Variable(
+                                    "z",
+                                ),
+                            },
+                        },
+                        right: Constant(
+                            Int(
+                                4,
+                            ),
+                        ),
+                    },
+                },
+                exported: false,
             },
         ],
     },

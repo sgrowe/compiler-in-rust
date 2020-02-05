@@ -17,7 +17,7 @@ fn func_with_closure()
 
 
 
-fn function_with_arguments(x, y)
+export fn function_with_arguments(x, y)
     x * y
 
 

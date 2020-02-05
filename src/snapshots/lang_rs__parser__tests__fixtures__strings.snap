@@ -5,37 +5,49 @@ expression: ast
 Ok(
     Ast {
         statements: [
-            Assignment {
-                name: "my_first_string",
-                expr: Constant(
-                    Str(
-                        "hello",
+            Declaration {
+                decl: Assignment {
+                    name: "my_first_string",
+                    expr: Constant(
+                        Str(
+                            "hello",
+                        ),
                     ),
-                ),
+                },
+                exported: false,
             },
-            Assignment {
-                name: "string_with_multiple_words",
-                expr: Constant(
-                    Str(
-                        "lots of words here",
+            Declaration {
+                decl: Assignment {
+                    name: "string_with_multiple_words",
+                    expr: Constant(
+                        Str(
+                            "lots of words here",
+                        ),
                     ),
-                ),
+                },
+                exported: false,
             },
-            Assignment {
-                name: "empty_string",
-                expr: Constant(
-                    Str(
-                        "",
+            Declaration {
+                decl: Assignment {
+                    name: "empty_string",
+                    expr: Constant(
+                        Str(
+                            "",
+                        ),
                     ),
-                ),
+                },
+                exported: false,
             },
-            Assignment {
-                name: "multiline_string",
-                expr: Constant(
-                    Str(
-                        "this baby\ngoes over\n\nmultiple lines.\n",
+            Declaration {
+                decl: Assignment {
+                    name: "multiline_string",
+                    expr: Constant(
+                        Str(
+                            "this baby\ngoes over\n\nmultiple lines.\n",
+                        ),
                     ),
-                ),
+                },
+                exported: false,
             },
         ],
     },
