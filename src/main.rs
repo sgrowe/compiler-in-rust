@@ -3,6 +3,7 @@ extern crate clap;
 use clap::{App, Arg};
 
 mod ast;
+mod binding_power;
 mod keywords;
 mod operators;
 mod parser;

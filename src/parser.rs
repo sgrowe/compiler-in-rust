@@ -1,5 +1,5 @@
 use super::ast::*;
-use super::operators::*;
+use super::binding_power::*;
 use super::tokeniser::*;
 use super::tokens::Token::*;
 use super::tokens::*;
@@ -158,28 +158,32 @@ impl<'a> Parser<'a> {
         right_binding_power: u32,
         first_token: Option<Token<'a>>,
     ) -> Result<Expression<'a>, ParseError<'a>> {
-        let mut t = match first_token {
+        let mut current_token = match first_token {
             Some(t) => t,
             None => self
                 .step()?
                 .map_or(Err(ParseError::UnexpectedEndOfInput), Ok)?,
         };
 
-        let mut token = self.peek_next_token()?;
+        let mut left = null_denotation(current_token);
 
-        let mut left = null_denotation(t);
+        while right_binding_power < self.next_token_binding_power() {
+            current_token = self
+                .step()?
+                .map(Ok)
+                .unwrap_or(Err(ParseError::UnexpectedEndOfInput))?;
 
-        while right_binding_power < token.map(left_binding_power).unwrap_or(0) {
-            t = token.map_or(Err(ParseError::UnexpectedEndOfInput), Ok)?;
-
-            self.step()?;
-
-            left = self.left_denotation(t, left)?;
-
-            token = self.peek_next_token()?;
+            left = self.left_denotation(current_token, left)?;
         }
 
         Ok(left)
+    }
+
+    fn next_token_binding_power(&self) -> u32 {
+        match self.peek_next_token() {
+            Ok(Some(token)) => token.binding_power(),
+            _ => 0,
+        }
     }
 
     fn left_denotation(
@@ -189,7 +193,7 @@ impl<'a> Parser<'a> {
     ) -> Result<Expression<'a>, ParseError<'a>> {
         match token {
             BinOp(operator) => {
-                let right = self.expression(left_binding_power(token), None)?;
+                let right = self.expression(token.binding_power(), None)?;
 
                 Ok(Expression::BinaryOp {
                     operator,
@@ -207,13 +211,6 @@ fn null_denotation<'a>(token: Token<'a>) -> Expression<'a> {
         Constant(c) => Expression::Constant(c),
         Name(name) => Expression::Variable(name),
         _ => panic!("unexpected token: {:?}", token),
-    }
-}
-
-fn left_binding_power<'a>(token: Token<'a>) -> u32 {
-    match token {
-        BinOp(op) => op.binding_power(),
-        _ => 0,
     }
 }
 
