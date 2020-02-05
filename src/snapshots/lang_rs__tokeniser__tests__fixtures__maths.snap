@@ -79,6 +79,18 @@ expression: tokens
         Equals,
     ),
     Ok(
+        Constant(
+            Int(
+                2,
+            ),
+        ),
+    ),
+    Ok(
+        BinOp(
+            Plus,
+        ),
+    ),
+    Ok(
         Name(
             "y",
         ),
@@ -91,6 +103,18 @@ expression: tokens
     Ok(
         Name(
             "z",
+        ),
+    ),
+    Ok(
+        BinOp(
+            Minus,
+        ),
+    ),
+    Ok(
+        Constant(
+            Int(
+                4,
+            ),
         ),
     ),
 ]

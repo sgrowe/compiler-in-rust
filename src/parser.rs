@@ -1,4 +1,5 @@
 use super::ast::*;
+use super::operators::*;
 use super::tokeniser::*;
 use super::tokens::Token::*;
 use super::tokens::*;
@@ -59,6 +60,7 @@ impl<'a> Parser<'a> {
             match (token, self.peek_next_token()?) {
                 (Name(name), _) => self.named_statement(name),
                 (Keyword(Function), _) => self.function(),
+                (Constant(_), _) => Ok(Statement::BareExpression(self.expression(0, Some(token))?)),
                 (token, _) => Err(ParseError::UnexpectedToken(token)),
             }
         } else {
@@ -172,9 +174,9 @@ impl<'a> Parser<'a> {
 
             self.step()?;
 
-            token = self.peek_next_token()?;
-
             left = self.left_denotation(t, left)?;
+
+            token = self.peek_next_token()?;
         }
 
         Ok(left)
@@ -204,15 +206,13 @@ fn null_denotation<'a>(token: Token<'a>) -> Expression<'a> {
     match token {
         Constant(c) => Expression::Constant(c),
         Name(name) => Expression::Variable(name),
-        _ => panic!("bad"),
+        _ => panic!("unexpected token: {:?}", token),
     }
 }
 
 fn left_binding_power<'a>(token: Token<'a>) -> u32 {
     match token {
-        BinOp(BinaryOperator::Plus) => 10,
-        BinOp(BinaryOperator::Minus) => 10,
-        BinOp(BinaryOperator::Multiply) => 20,
+        BinOp(op) => op.binding_power(),
         _ => 0,
     }
 }

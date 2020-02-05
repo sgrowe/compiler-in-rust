@@ -7,8 +7,6 @@ fn my_first_func()
 
 
 
-
-
 fn func_with_closure()
     x = 5
 
@@ -16,3 +14,12 @@ fn func_with_closure()
         x * 2
 
     top_stuff
+
+
+
+fn function_with_arguments(x, y)
+    x * y
+
+
+fn single_argument_func(x)
+    2 * x + 1

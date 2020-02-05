@@ -82,6 +82,65 @@ Ok(
                     ),
                 ],
             },
+            FunctionDecl {
+                name: "function_with_arguments",
+                arguments: FunctionArgsList {
+                    args: [
+                        FunctionArg {
+                            name: "x",
+                        },
+                        FunctionArg {
+                            name: "y",
+                        },
+                    ],
+                },
+                body: [
+                    BareExpression(
+                        BinaryOp {
+                            operator: Multiply,
+                            left: Variable(
+                                "x",
+                            ),
+                            right: Variable(
+                                "y",
+                            ),
+                        },
+                    ),
+                ],
+            },
+            FunctionDecl {
+                name: "single_argument_func",
+                arguments: FunctionArgsList {
+                    args: [
+                        FunctionArg {
+                            name: "x",
+                        },
+                    ],
+                },
+                body: [
+                    BareExpression(
+                        BinaryOp {
+                            operator: Plus,
+                            left: BinaryOp {
+                                operator: Multiply,
+                                left: Constant(
+                                    Int(
+                                        2,
+                                    ),
+                                ),
+                                right: Variable(
+                                    "x",
+                                ),
+                            },
+                            right: Constant(
+                                Int(
+                                    1,
+                                ),
+                            ),
+                        },
+                    ),
+                ],
+            },
         ],
     },
 )

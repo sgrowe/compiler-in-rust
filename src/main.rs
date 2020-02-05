@@ -4,6 +4,7 @@ use clap::{App, Arg};
 
 mod ast;
 mod keywords;
+mod operators;
 mod parser;
 mod tokeniser;
 mod tokens;
@@ -26,7 +27,7 @@ fn main() -> std::io::Result<()> {
 
     let ast = self::parser::parse(&source);
 
-    println!("Hello, {:?}", ast);
+    println!("Hello, {:#?}", ast);
 
     Ok(())
 }

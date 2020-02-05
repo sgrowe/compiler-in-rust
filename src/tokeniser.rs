@@ -27,7 +27,7 @@ impl<'a> Iterator for Tokeniser<'a> {
     type Item = Result<Token<'a>, TokeniserError>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        use self::BinaryOperator::*;
+        use super::operators::BinaryOperator::*;
         use Token::*;
 
         while let Some((i, c)) = self.step() {
@@ -45,30 +45,37 @@ impl<'a> Iterator for Tokeniser<'a> {
                 _ => {}
             }
 
-            return match (c, self.peek_next_char()) {
-                ('(', _) => Some(Ok(OpenParen)),
-                (')', _) => Some(Ok(CloseParen)),
-                ('"', _) => Some(self.string_constant(i)),
-                ('|', _) => Some(Ok(Pipe)),
-                ('+', _) => Some(Ok(BinOp(Plus))),
-                ('*', _) => Some(Ok(BinOp(Multiply))),
-                ('-', _) => Some(Ok(BinOp(Minus))),
-                (',', _) => Some(Ok(Comma)),
-                ('=', Some('>')) => {
-                    self.step();
-                    Some(Ok(RightArrow))
-                }
-                ('=', _) => Some(Ok(Equals)),
-                (_, _) => {
+            let token = match c {
+                '(' => OpenParen,
+                ')' => CloseParen,
+                '"' => match self.string_constant(i) {
+                    Ok(str_const) => str_const,
+                    Err(error) => return Some(Err(error)),
+                },
+                '|' => Pipe,
+                '+' => BinOp(Plus),
+                '*' => BinOp(Multiply),
+                '-' => BinOp(Minus),
+                ',' => Comma,
+                '=' => match self.peek_next_char() {
+                    Some('>') => {
+                        self.step();
+                        FatRightArrow
+                    }
+                    _ => Equals,
+                },
+                _ => {
                     if c.is_alphabetic() {
-                        Some(Ok(self.name(i)))
+                        self.name(i)
                     } else if c.is_numeric() {
-                        Some(Ok(self.number(i)))
+                        self.number(i)
                     } else {
-                        None
+                        return None;
                     }
                 }
             };
+
+            return Some(Ok(token));
         }
 
         while let Some(_) = self.indent_stack.pop() {

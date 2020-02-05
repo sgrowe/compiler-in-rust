@@ -1,11 +1,12 @@
 use super::keywords::Keyword;
+use super::operators::BinaryOperator;
 
 #[derive(Debug, Copy, Clone)]
 pub enum Token<'a> {
-    RightArrow,
     Equals,
     Pipe,
     Comma,
+    FatRightArrow,
     OpenParen,
     CloseParen,
     IndentIncr,
@@ -14,13 +15,6 @@ pub enum Token<'a> {
     Keyword(Keyword),
     BinOp(BinaryOperator),
     Constant(Constant<'a>),
-}
-
-#[derive(Debug, Copy, Clone)]
-pub enum BinaryOperator {
-    Plus,
-    Minus,
-    Multiply,
 }
 
 #[derive(Debug, Copy, Clone)]

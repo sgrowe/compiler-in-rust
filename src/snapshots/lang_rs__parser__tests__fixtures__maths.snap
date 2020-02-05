@@ -46,12 +46,28 @@ Ok(
             Assignment {
                 name: "z",
                 expr: BinaryOp {
-                    operator: Multiply,
-                    left: Variable(
-                        "y",
-                    ),
-                    right: Variable(
-                        "z",
+                    operator: Minus,
+                    left: BinaryOp {
+                        operator: Plus,
+                        left: Constant(
+                            Int(
+                                2,
+                            ),
+                        ),
+                        right: BinaryOp {
+                            operator: Multiply,
+                            left: Variable(
+                                "y",
+                            ),
+                            right: Variable(
+                                "z",
+                            ),
+                        },
+                    },
+                    right: Constant(
+                        Int(
+                            4,
+                        ),
                     ),
                 },
             },
