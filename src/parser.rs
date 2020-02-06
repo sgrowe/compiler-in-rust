@@ -256,6 +256,7 @@ fn null_denotation<'a>(token: Token<'a>) -> Expression<'a> {
     }
 }
 
+// TODO: maybe implement `From<TokeniserError>`
 #[derive(Debug, Copy, Clone)]
 pub enum ParseError<'a> {
     TokeniserError(TokeniserError),

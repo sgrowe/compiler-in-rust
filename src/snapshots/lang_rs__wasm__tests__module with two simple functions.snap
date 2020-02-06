@@ -1,0 +1,13 @@
+---
+source: src/wasm.rs
+expression: "std::str::from_utf8(&out).unwrap()"
+---
+(module
+  (func $get_magic_number (result i64)
+    i64.const 10
+    i64.const 5
+    i64.add)
+  (func $add (param $arg_1 i64) (param $arg_2 i64) (result i64)
+    local.get $arg_1
+    local.get $arg_2
+    i64.add))

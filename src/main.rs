@@ -9,6 +9,7 @@ mod operators;
 mod parser;
 mod tokeniser;
 mod tokens;
+mod wasm;
 
 fn main() -> std::io::Result<()> {
     let matches = App::new("Lang")
