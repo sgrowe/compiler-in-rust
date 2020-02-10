@@ -11,18 +11,18 @@ pub struct WasmFormat {
 }
 
 impl WasmFormat {
-    fn increase_indent(&self) -> Self {
+    fn increase_indent(self) -> Self {
         WasmFormat {
             indent: self.indent + 2,
         }
     }
 
-    fn new_line_with_indent<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+    fn new_line_with_indent<W: Write>(self, writer: &mut W) -> io::Result<()> {
         if self.indent > 0 {
-            writer.write("\n".as_bytes())?;
+            writer.write_all(b"\n")?;
 
             for _ in 0..self.indent {
-                writer.write(" ".as_bytes())?;
+                writer.write_all(b" ")?;
             }
         }
 
@@ -163,7 +163,7 @@ pub enum WasmType {
 }
 
 impl WasmType {
-    fn to_wasm_text(&self) -> &'static str {
+    fn to_wasm_text(self) -> &'static str {
         match self {
             WasmType::I64 => "i64",
             WasmType::I32 => "i32",

@@ -16,9 +16,7 @@ struct Parser<'a> {
 
 fn next_token<'a>(tokens: &mut Tokeniser<'a>) -> Result<Option<Token<'a>>, ParseError<'a>> {
     match tokens.next() {
-        Some(result) => result
-            .map_err(ParseError::TokeniserError)
-            .map(|token| Some(token)),
+        Some(result) => result.map_err(ParseError::TokeniserError).map(Some),
         None => Ok(None),
     }
 }
@@ -74,7 +72,7 @@ impl<'a> Parser<'a> {
                         self.top_level_statement(true)
                     }
                 }
-                token => return Err(ParseError::UnexpectedToken(token, "top level statement")),
+                token => Err(ParseError::UnexpectedToken(token, "top level statement")),
             }
         } else {
             Err(ParseError::UnexpectedEndOfInput)
@@ -164,11 +162,8 @@ impl<'a> Parser<'a> {
     }
 
     fn func_arg(&mut self, name: &'a str) -> Result<FunctionArg<'a>, ParseError<'a>> {
-        match self.peek_next_token()? {
-            Some(Comma) => {
-                self.step()?;
-            }
-            _ => {}
+        if let Some(Comma) = self.peek_next_token()? {
+            self.step()?;
         }
 
         Ok(FunctionArg { name })

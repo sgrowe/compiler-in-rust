@@ -2,6 +2,8 @@ use super::keywords::*;
 use super::tokens::*;
 use std::str::CharIndices;
 
+use std::cmp::Ordering;
+
 pub fn tokenise<'a>(source: &'a str) -> Tokeniser<'a> {
     let mut chars = source.char_indices();
     let next_char = chars.next();
@@ -78,7 +80,7 @@ impl<'a> Iterator for Tokeniser<'a> {
             return Some(Ok(token));
         }
 
-        while let Some(_) = self.indent_stack.pop() {
+        if self.indent_stack.pop().is_some() {
             return Some(Ok(IndentDecr));
         }
 
@@ -116,14 +118,16 @@ impl<'a> Tokeniser<'a> {
                     indent = 0;
                 }
                 _ => {
-                    return if indent > self.current_indent() {
-                        self.indent_stack.push(indent);
-                        Some(IndentIncr)
-                    } else if indent < self.current_indent() {
-                        self.indent_stack.pop();
-                        Some(IndentDecr)
-                    } else {
-                        None
+                    return match indent.cmp(&self.current_indent()) {
+                        Ordering::Greater => {
+                            self.indent_stack.push(indent);
+                            Some(IndentIncr)
+                        }
+                        Ordering::Less => {
+                            self.indent_stack.pop();
+                            Some(IndentDecr)
+                        }
+                        Ordering::Equal => None,
                     };
                 }
             }
@@ -160,7 +164,7 @@ impl<'a> Tokeniser<'a> {
         let name = &self.source[start..end];
 
         get_matching_keyword(name)
-            .map(|keyword| Token::Keyword(keyword))
+            .map(Token::Keyword)
             .unwrap_or(Token::Name(name))
     }
 

@@ -19,10 +19,7 @@ pub fn ast_to_wasm<'a>(ast: &Ast<'a>) -> WasmModule<'a> {
                 } => {
                     let wasm_args = arguments.args.iter().map(|arg| arg.name).collect();
 
-                    let wasm_body = body
-                        .iter()
-                        .flat_map(|s| compile_func_body_statement(&s))
-                        .collect();
+                    let wasm_body = body.iter().flat_map(compile_func_body_statement).collect();
 
                     module.add_function(
                         WasmFunction::new(name, wasm_args, Some(WasmType::I32), wasm_body),
@@ -62,7 +59,7 @@ fn compile_expression<'a>(expr: &Expression<'a>) -> Vec<WasmInstruction<'a>> {
 
             instr.append(&mut compile_expression(left));
             instr.append(&mut compile_expression(right));
-            instr.push(binary_op_to_wasm_instruction(operator));
+            instr.push(binary_op_to_wasm_instruction(*operator));
 
             instr
         }
@@ -70,7 +67,7 @@ fn compile_expression<'a>(expr: &Expression<'a>) -> Vec<WasmInstruction<'a>> {
     }
 }
 
-fn binary_op_to_wasm_instruction<'a>(op: &BinaryOperator) -> WasmInstruction<'a> {
+fn binary_op_to_wasm_instruction<'a>(op: BinaryOperator) -> WasmInstruction<'a> {
     use BinaryOperator::*;
     use WasmInstruction::*;
 
