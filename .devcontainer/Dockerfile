@@ -42,6 +42,9 @@ RUN apt-get update \
     && curl -sL https://deb.nodesource.com/setup_13.x | bash - \
     && apt-get install -y nodejs \
     #
+    # Install fish
+    && apt-get install -y fish \
+    #
     # Clean up
     && apt-get autoremove -y \
     && apt-get clean -y \
