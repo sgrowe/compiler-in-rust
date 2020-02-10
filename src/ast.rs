@@ -3,7 +3,7 @@ use super::tokens::*;
 
 #[derive(Debug, Clone)]
 pub struct Ast<'a> {
-    statements: Vec<TopLevelStatement<'a>>,
+    pub statements: Vec<TopLevelStatement<'a>>,
 }
 
 impl<'a> Ast<'a> {

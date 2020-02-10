@@ -1,7 +1,7 @@
 use std::io;
 use std::io::Write;
 
-trait Wasm<Writer: io::Write> {
+pub trait Wasm<Writer: io::Write> {
     fn write_text(&self, writer: &mut Writer, format: WasmFormat) -> io::Result<()>;
 }
 
@@ -33,17 +33,28 @@ impl WasmFormat {
 #[derive(Debug, Clone)]
 pub struct WasmModule<'a> {
     functions: Vec<WasmFunction<'a>>,
+    exports: Vec<WasmExport<'a>>,
 }
 
 impl<'a> WasmModule<'a> {
-    fn new() -> Self {
+    pub fn new() -> Self {
         WasmModule {
             functions: Vec::new(),
+            exports: Vec::new(),
         }
     }
 
-    fn add_function(&mut self, func: WasmFunction<'a>) {
+    pub fn add_function(&mut self, func: WasmFunction<'a>, exported: bool) {
+        let name = func.name;
+
         self.functions.push(func);
+
+        if exported {
+            self.exports.push(WasmExport::Function {
+                wasm_name: name,
+                exported_name: name,
+            })
+        }
     }
 }
 
@@ -55,6 +66,10 @@ impl<'a, Writer: Write> Wasm<Writer> for WasmModule<'a> {
 
         for func in &self.functions {
             func.write_text(writer, body_format)?;
+        }
+
+        for export in &self.exports {
+            export.write_text(writer, body_format)?;
         }
 
         write!(writer, ")")
@@ -70,7 +85,7 @@ pub struct WasmFunction<'a> {
 }
 
 impl<'a> WasmFunction<'a> {
-    fn new(
+    pub fn new(
         name: &'a str,
         params: Vec<&'a str>,
         return_type: Option<WasmType>,
@@ -86,26 +101,26 @@ impl<'a> WasmFunction<'a> {
 }
 
 impl<'a, Writer: Write> Wasm<Writer> for WasmFunction<'a> {
-    fn write_text(&self, writer: &mut Writer, format: WasmFormat) -> io::Result<()> {
-        format.new_line_with_indent(writer)?;
+    fn write_text(&self, w: &mut Writer, format: WasmFormat) -> io::Result<()> {
+        format.new_line_with_indent(w)?;
 
-        write!(writer, "(func ${}", self.name)?;
+        write!(w, "(func ${}", self.name)?;
 
         for param in &self.params {
-            write!(writer, " (param ${} i64)", param)?;
+            write!(w, " (param ${} i32)", param)?;
         }
 
         if let Some(wasm_type) = self.return_type {
-            write!(writer, " (result {})", wasm_type.to_wasm_text())?;
+            write!(w, " (result {})", wasm_type.to_wasm_text())?;
         }
 
         let body_format = format.increase_indent();
 
         for instruction in &self.body {
-            instruction.write_text(writer, body_format)?;
+            instruction.write_text(w, body_format)?;
         }
 
-        write!(writer, ")")
+        write!(w, ")")
     }
 }
 
@@ -113,7 +128,9 @@ impl<'a, Writer: Write> Wasm<Writer> for WasmFunction<'a> {
 pub enum WasmInstruction<'a> {
     GetLocal(&'a str),
     ConstI64(i64),
+    ConstI32(i32),
     AddI64,
+    AddI32,
 }
 
 impl<'a, Writer: Write> Wasm<Writer> for WasmInstruction<'a> {
@@ -125,17 +142,20 @@ impl<'a, Writer: Write> Wasm<Writer> for WasmInstruction<'a> {
         match self {
             GetLocal(name) => write!(w, "local.get ${}", name),
             ConstI64(value) => write!(w, "i64.const {}", value),
+            ConstI32(value) => write!(w, "i32.const {}", value),
             AddI64 => write!(w, "i64.add"),
+            AddI32 => write!(w, "i32.add"),
         }
     }
 }
 
 #[derive(Debug, Copy, Clone)]
-pub struct WasmExport<'a> {
-    name: &'a str,
-    function_name: &'a str,
+pub enum WasmExport<'a> {
+    Function {
+        wasm_name: &'a str,
+        exported_name: &'a str,
+    },
 }
-
 #[derive(Debug, Copy, Clone)]
 pub enum WasmType {
     I32,
@@ -145,21 +165,28 @@ pub enum WasmType {
 impl WasmType {
     fn to_wasm_text(&self) -> &'static str {
         match self {
-            I64 => "i64",
-            I32 => "i32",
+            WasmType::I64 => "i64",
+            WasmType::I32 => "i32",
         }
     }
 }
 
 impl<'a, Writer: Write> Wasm<Writer> for WasmExport<'a> {
     fn write_text(&self, writer: &mut Writer, format: WasmFormat) -> io::Result<()> {
+        use WasmExport::*;
+
         format.new_line_with_indent(writer)?;
 
-        write!(
-            writer,
-            "(export \"{}\" (func ${}))",
-            self.name, self.function_name,
-        )
+        match self {
+            Function {
+                wasm_name,
+                exported_name,
+            } => write!(
+                writer,
+                "(export \"{}\" (func ${}))",
+                exported_name, wasm_name
+            ),
+        }
     }
 }
 
@@ -205,7 +232,7 @@ mod tests {
 
         assert_wasm_output_matches(
             func,
-            "(func $my_func (param $arg_1 i64) (param $arg_2 i64) (result i64))",
+            "(func $my_func (param $arg_1 i32) (param $arg_2 i32) (result i64))",
         );
     }
 
@@ -216,19 +243,25 @@ mod tests {
 
         let mut module = WasmModule::new();
 
-        module.add_function(WasmFunction::new(
-            "get_magic_number",
-            vec![],
-            Some(I64),
-            vec![ConstI64(10), ConstI64(5), AddI64],
-        ));
+        module.add_function(
+            WasmFunction::new(
+                "get_magic_number",
+                vec![],
+                Some(I64),
+                vec![ConstI64(10), ConstI64(5), AddI64],
+            ),
+            false,
+        );
 
-        module.add_function(WasmFunction::new(
-            "add",
-            vec!["arg_1", "arg_2"],
-            Some(I64),
-            vec![GetLocal("arg_1"), GetLocal("arg_2"), AddI64],
-        ));
+        module.add_function(
+            WasmFunction::new(
+                "add",
+                vec!["arg_1", "arg_2"],
+                Some(I64),
+                vec![GetLocal("arg_1"), GetLocal("arg_2"), AddI64],
+            ),
+            true,
+        );
 
         assert_wasm_snapshot_matches("module with two simple functions", module);
     }
@@ -236,9 +269,9 @@ mod tests {
     #[test]
     fn formats_simple_export() {
         assert_wasm_output_matches(
-            WasmExport {
-                name: "add",
-                function_name: "add_em",
+            WasmExport::Function {
+                exported_name: "add",
+                wasm_name: "add_em",
             },
             "(export \"add\" (func $add_em))",
         );

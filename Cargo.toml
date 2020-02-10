@@ -12,3 +12,7 @@ clap = "2.33.0"
 [dev-dependencies]
 insta = "0.13.1"
 test-case = "1.0.0"
+
+
+[profile.release]
+lto = true

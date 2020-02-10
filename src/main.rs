@@ -1,9 +1,14 @@
 extern crate clap;
 
+use self::code_gen::*;
+use self::wasm::*;
 use clap::{App, Arg};
+use std::fs::{create_dir_all, File};
+use std::io::BufWriter;
 
 mod ast;
 mod binding_power;
+mod code_gen;
 mod keywords;
 mod operators;
 mod parser;
@@ -27,9 +32,15 @@ fn main() -> std::io::Result<()> {
 
     let source = std::fs::read_to_string(file)?;
 
-    let ast = self::parser::parse(&source);
+    let ast = self::parser::parse(&source).unwrap();
 
-    println!("Hello, {:#?}", ast);
+    let wasm = ast_to_wasm(&ast);
+
+    create_dir_all("dist")?;
+
+    let mut output_file = BufWriter::new(File::create("dist/out.wat")?);
+
+    wasm.write_text(&mut output_file, WasmFormat::default())?;
 
     Ok(())
 }
