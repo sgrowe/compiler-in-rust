@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sam's random lang playground</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/kognise/water.css/dist/dark.min.css"
+    />
+    <style>
+      .code-editor {
+        height: 25em;
+        white-space: pre;
+      }
+    </style>
+    <script src="index.js" type="module"></script>
+  </head>
+
+  <body>
+    <h1>Sam's random lang playground</h1>
+
+    <h2>Your program</h2>
+
+    <form>
+      <textarea class="code-editor">
+
+export fn add(x, y)
+    x + y
+
+</textarea
+      >
+
+      <button>Compile</button>
+    </form>
+
+    <h2>Compiled WASM</h2>
+    <pre><code class="js-output"></code></pre>
+  </body>
+</html>

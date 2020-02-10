@@ -58,5 +58,9 @@ RUN git clone https://github.com/rust-analyzer/rust-analyzer && \
     npm run package
 
 
+# Install wasm-pack
+RUN cargo install wasm-pack
+
+
 # Switch back to dialog for any ad-hoc use of apt-get
 ENV DEBIAN_FRONTEND=dialog
