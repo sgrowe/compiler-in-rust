@@ -24,3 +24,15 @@ jobs:
       - name: Test compiler frontend
         run: cargo test --verbose
         working-directory: compiler-frontend
+
+      - name: Install online playground dependencies
+        run: yarn install
+        working-directory: online-playground
+
+      - name: Build online playground
+        run: yarn build
+        working-directory: online-playground
+
+      - name: Deploy online playground
+        run: yarn deploy
+        working-directory: online-playground

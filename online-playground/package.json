@@ -1,0 +1,14 @@
+{
+  "name": "online-playground",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "wasm-pack build --target=web && mkdir -p dist/ && cp index.html index.js pkg/*.js pkg/*.wasm dist/",
+    "deploy": "netlify deploy --dir=dist/",
+    "deploy:prod": "netlify deploy --dir=dist/ --prod"
+  },
+  "devDependencies": {
+    "netlify-cli": "^2.32.0"
+  }
+}
