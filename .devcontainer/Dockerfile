@@ -51,15 +51,15 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 
+# Install wasm-pack
+RUN cargo install wasm-pack
+
+
 # Install rust analyser
 RUN git clone https://github.com/rust-analyzer/rust-analyzer && \
     cd rust-analyzer/editors/code && \
     npm i && \
     npm run package
-
-
-# Install wasm-pack
-RUN cargo install wasm-pack
 
 
 # Switch back to dialog for any ad-hoc use of apt-get
