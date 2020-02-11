@@ -9,10 +9,18 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build
+      - name: Build core
         run: cargo build --verbose
-        working-directory: compiler
+        working-directory: compiler-core
 
-      - name: Run tests
+      - name: Test core
         run: cargo test --verbose
-        working-directory: compiler
+        working-directory: compiler-core
+
+      - name: Build compiler frontend
+        run: cargo build --verbose
+        working-directory: compiler-frontend
+
+      - name: Test compiler frontend
+        run: cargo test --verbose
+        working-directory: compiler-frontend

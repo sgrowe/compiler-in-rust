@@ -1,4 +1,4 @@
-/compiler/target
+**/target
 **/*.rs.bk
-/compiler/dist
-/compiler/pkg
+**/dist
+**/pkg

@@ -1,0 +1,15 @@
+[package]
+name = "compiler_frontend"
+version = "0.1.0"
+authors = ["Sam Rowe <sam.rowe@red-badger.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+compiler_core = { path = "../compiler-core" }
+clap = "2.33.0"
+
+
+[profile.release]
+lto = true

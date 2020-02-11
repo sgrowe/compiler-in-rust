@@ -1,18 +1,15 @@
-use wasm_bindgen::prelude::*;
-
 use self::wasm::*;
 
-mod ast;
-mod binding_power;
-mod code_gen;
-mod keywords;
-mod operators;
-mod parser;
-mod tokeniser;
-mod tokens;
-mod wasm;
+pub mod ast;
+pub mod binding_power;
+pub mod code_gen;
+pub mod keywords;
+pub mod operators;
+pub mod parser;
+pub mod tokeniser;
+pub mod tokens;
+pub mod wasm;
 
-#[wasm_bindgen]
 pub fn compile(source: &str) -> String {
     let mut out = Vec::new();
 

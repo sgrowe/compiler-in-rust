@@ -1,20 +1,9 @@
-extern crate clap;
-
-use self::code_gen::*;
-use self::wasm::*;
 use clap::{App, Arg};
+use compiler_core::code_gen::*;
+use compiler_core::parser::parse;
+use compiler_core::wasm::*;
 use std::fs::{create_dir_all, File};
 use std::io::BufWriter;
-
-mod ast;
-mod binding_power;
-mod code_gen;
-mod keywords;
-mod operators;
-mod parser;
-mod tokeniser;
-mod tokens;
-mod wasm;
 
 fn main() -> std::io::Result<()> {
     let matches = App::new("Lang")
@@ -32,7 +21,7 @@ fn main() -> std::io::Result<()> {
 
     let source = std::fs::read_to_string(file)?;
 
-    let ast = self::parser::parse(&source).unwrap();
+    let ast = parse(&source).unwrap();
 
     let wasm = ast_to_wasm(&ast);
 

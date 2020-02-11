@@ -1,4 +1,4 @@
-import init, { compile } from "/pkg/lang_rs.js"
+import init, { compile } from "/online_playground.js"
 
 init().then(wasm => {
   console.log("initialised", wasm)

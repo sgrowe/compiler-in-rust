@@ -1,5 +1,8 @@
 version: 1
 update_configs:
   - package_manager: "rust:cargo"
-    directory: "/compiler"
+    directory: "/compiler-core"
+    update_schedule: "live"
+  - package_manager: "rust:cargo"
+    directory: "/compiler-frontend"
     update_schedule: "live"
