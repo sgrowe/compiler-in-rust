@@ -38,3 +38,6 @@ jobs:
       - name: Deploy online playground
         run: yarn deploy
         working-directory: online-playground
+        env:
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
