@@ -51,8 +51,8 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 
-# Install wasm-pack
-RUN cargo install wasm-pack
+# Install wasm-pack & insta
+RUN cargo install wasm-pack cargo-insta
 
 
 # Install rust analyser
