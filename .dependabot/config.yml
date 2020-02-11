@@ -1,5 +1,5 @@
 version: 1
 update_configs:
   - package_manager: "rust:cargo"
-    directory: "/"
+    directory: "/compiler"
     update_schedule: "live"
