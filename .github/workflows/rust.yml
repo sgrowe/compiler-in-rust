@@ -29,7 +29,12 @@ jobs:
             ${{ runner.os }}-
 
       - name: Add Cargo bin folder to PATH
-        run: echo "::add-path::$GITHUB_WORKSPACE/.cargo/bin"
+        run: echo "::add-path::$CARGO_HOME/bin"
+
+      - name: Debug env vars
+        run: |
+          echo "$CARGO_HOME"
+          echo "$PATH"
 
       - name: Build
         run: cargo build --verbose
