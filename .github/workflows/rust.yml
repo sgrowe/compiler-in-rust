@@ -7,6 +7,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Update Rust
+        run: rustup update
+
       - name: Set Cargo home folder
         run: echo "::set-env name=CARGO_HOME::$GITHUB_WORKSPACE/.cargo"
 
