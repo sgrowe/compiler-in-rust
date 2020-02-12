@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      CARGO_HOME: $GITHUB_WORKSPACE/.cargo
+      CARGO_HOME: ${{ env.GITHUB_WORKSPACE }}/.cargo
 
     steps:
       - uses: actions/checkout@v2
