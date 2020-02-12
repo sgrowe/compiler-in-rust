@@ -31,11 +31,6 @@ jobs:
             ${{ runner.os }}-cargo-
             ${{ runner.os }}-
 
-      - name: Debug env vars
-        run: |
-          echo "$CARGO_HOME"
-          echo "$PATH"
-
       - name: Build
         run: cargo build --verbose
 
