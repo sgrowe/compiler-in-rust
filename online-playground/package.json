@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "build": "wasm-pack build --target=web && mkdir -p dist/ && cp index.html index.js pkg/*.js pkg/*.wasm dist/",
+    "build": "wasm-pack build --target=web && mkdir -p dist/ && cp src/*.html src/*.js pkg/*.js pkg/*.wasm dist/",
     "deploy": "netlify deploy --dir=dist/",
     "deploy:prod": "netlify deploy --dir=dist/ --prod",
     "serve": "python3 -m http.server --directory dist"
