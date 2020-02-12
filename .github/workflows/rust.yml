@@ -6,10 +6,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    env:
-      CARGO_HOME: ${{ env.GITHUB_WORKSPACE }}/.cargo
-
     steps:
+      - name: Set Cargo home folder
+        run: echo "::set-env name=CARGO_HOME::$GITHUB_WORKSPACE/.cargo"
+
+      - name: Add Cargo bin folder to PATH
+        run: echo "::add-path::$CARGO_HOME/bin"
+
       - uses: actions/checkout@v2
 
       - name: Cache cargo dependencies
@@ -17,7 +20,7 @@ jobs:
         env:
           cache-name: cache-cargo-home
         with:
-          path: $CARGO_HOME
+          path: ${{ env.CARGO_HOME }}
           # ^ Specify individual folders to cache according to [1] when it's supported (see [2]).
           #
           # [1]: https://doc.rust-lang.org/cargo/guide/cargo-home.html#caching-the-cargo-home-in-ci
@@ -27,9 +30,6 @@ jobs:
             ${{ runner.os }}-cargo-${{ env.cache-name }}-
             ${{ runner.os }}-cargo-
             ${{ runner.os }}-
-
-      - name: Add Cargo bin folder to PATH
-        run: echo "::add-path::$CARGO_HOME/bin"
 
       - name: Debug env vars
         run: |
