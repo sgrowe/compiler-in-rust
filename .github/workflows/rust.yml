@@ -8,6 +8,7 @@ jobs:
 
     env:
       CARGO_HOME: $GITHUB_WORKSPACE/.cargo
+      PATH: $PATH:$GITHUB_WORKSPACE/.cargo/bin
 
     steps:
       - uses: actions/checkout@v2
