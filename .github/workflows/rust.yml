@@ -6,8 +6,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      CARGO_HOME: $GITHUB_WORKSPACE/.cargo
+
     steps:
       - uses: actions/checkout@v2
+
+      - name: Cache cargo dependencies
+        uses: actions/cache@v1
+        env:
+          cache-name: cache-cargo-home
+        with:
+          path: $CARGO_HOME
+          # ^ Specify individual folders to cache according to [1] when it's supported (see [2]).
+          #
+          # [1]: https://doc.rust-lang.org/cargo/guide/cargo-home.html#caching-the-cargo-home-in-ci
+          # [2]: https://github.com/actions/cache/issues/16
+          key: ${{ runner.os }}-cargo-${{ env.cache-name }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ env.cache-name }}-
+            ${{ runner.os }}-cargo-
+            ${{ runner.os }}-
 
       - name: Build
         run: cargo build --verbose
