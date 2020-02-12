@@ -9,7 +9,3 @@ edition = "2018"
 [dependencies]
 compiler_core = { path = "../compiler-core" }
 clap = "2.33.0"
-
-
-[profile.release]
-lto = true

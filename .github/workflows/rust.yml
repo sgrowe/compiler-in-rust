@@ -9,21 +9,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build core
+      - name: Build
         run: cargo build --verbose
-        working-directory: compiler-core
 
-      - name: Test core
+      - name: Test
         run: cargo test --verbose
-        working-directory: compiler-core
-
-      - name: Build compiler frontend
-        run: cargo build --verbose
-        working-directory: compiler-frontend
-
-      - name: Test compiler frontend
-        run: cargo test --verbose
-        working-directory: compiler-frontend
 
       - name: Install online playground dependencies
         run: |
