@@ -59,6 +59,10 @@ pub struct FunctionArg<'a> {
 pub enum Expression<'a> {
     Variable(&'a str),
     Constant(Constant<'a>),
+    FunctionCall {
+        name: &'a str,
+        args: Vec<Expression<'a>>,
+    },
     BinaryOp {
         operator: BinaryOperator,
         left: Box<Expression<'a>>,

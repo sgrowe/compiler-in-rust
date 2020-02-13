@@ -19,10 +19,11 @@ impl BindingPower for BinaryOperator {
 
 impl<'a> BindingPower for Token<'a> {
     fn binding_power(&self) -> u32 {
-        use Token::*;
-
         match self {
-            BinOp(op) => op.binding_power(),
+            Token::BinOp(op) => op.binding_power(),
+            // Token::OpenParen => 80,
+            // Token::CloseParen => 80,
+            // Token::Comma => 90,
             _ => 0,
         }
     }

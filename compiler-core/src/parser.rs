@@ -121,9 +121,38 @@ impl<'a> Parser<'a> {
                 }))
             }
             Some(IndentDecr) => Ok(BareExpression(Expression::Variable(name))),
+            // Some(OpenParen) => {
+            //     self.step()?;
+
+            //     Ok(BareExpression(self.function_call(name)?))
+            // }
             Some(_) => Ok(BareExpression(self.expression(0, Some(Token::Name(name)))?)),
             None => Ok(BareExpression(Expression::Variable(name))),
         }
+    }
+
+    fn function_call(&mut self, name: &'a str) -> Result<Expression<'a>, ParseError<'a>> {
+        let mut args = vec![];
+
+        while let Some(token) = self.step()? {
+            println!("F call {}: {:?}", name, token);
+
+            match token {
+                CloseParen => {
+                    println!("Close paren {}", name);
+                    return Ok(Expression::FunctionCall { name, args });
+                }
+                _ => {
+                    args.push(self.expression(0, Some(token))?);
+
+                    if let Some(Comma) = self.peek_next_token()? {
+                        self.step()?;
+                    }
+                }
+            }
+        }
+
+        Err(ParseError::UnexpectedEndOfInput)
     }
 
     fn function(&mut self) -> Result<Declaration<'a>, ParseError<'a>> {
@@ -202,13 +231,12 @@ impl<'a> Parser<'a> {
                 .map_or(Err(ParseError::UnexpectedEndOfInput), Ok)?,
         };
 
-        let mut left = null_denotation(current_token);
+        let mut left = self.null_denotation(current_token)?;
 
         while right_binding_power < self.next_token_binding_power() {
             current_token = self
                 .step()?
-                .map(Ok)
-                .unwrap_or(Err(ParseError::UnexpectedEndOfInput))?;
+                .map_or(Err(ParseError::UnexpectedEndOfInput), Ok)?;
 
             left = self.left_denotation(current_token, left)?;
         }
@@ -241,13 +269,23 @@ impl<'a> Parser<'a> {
             _ => Ok(left),
         }
     }
-}
 
-fn null_denotation<'a>(token: Token<'a>) -> Expression<'a> {
-    match token {
-        Constant(c) => Expression::Constant(c),
-        Name(name) => Expression::Variable(name),
-        _ => panic!("unexpected token: {:?}", token),
+    fn null_denotation(&mut self, token: Token<'a>) -> Result<Expression<'a>, ParseError<'a>> {
+        match token {
+            Constant(c) => Ok(Expression::Constant(c)),
+            Name(name) => {
+                if let Some(OpenParen) = self.peek_next_token()? {
+                    self.step()?;
+                    self.function_call(name)
+                } else {
+                    Ok(Expression::Variable(name))
+                }
+            }
+            _ => Err(ParseError::UnexpectedToken(
+                token,
+                "null denotation of expression token",
+            )),
+        }
     }
 }
 
@@ -272,6 +310,7 @@ mod tests {
     #[test_case("src/fixtures/strings.lang"; "strings")]
     #[test_case("src/fixtures/maths.lang"; "maths")]
     #[test_case("src/fixtures/functions.lang"; "functions")]
+    #[test_case("src/fixtures/example_program.lang"; "example program")]
     fn fixtures(fixture_file_name: &str) -> std::io::Result<()> {
         let contents = fs::read_to_string(fixture_file_name)?;
 

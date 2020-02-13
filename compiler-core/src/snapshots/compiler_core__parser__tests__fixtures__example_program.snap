@@ -1,0 +1,72 @@
+---
+source: compiler-core/src/parser.rs
+expression: ast
+---
+Ok(
+    Ast {
+        statements: [
+            Declaration {
+                decl: FunctionDecl {
+                    name: "add",
+                    arguments: FunctionArgsList {
+                        args: [
+                            FunctionArg {
+                                name: "x",
+                            },
+                            FunctionArg {
+                                name: "y",
+                            },
+                        ],
+                    },
+                    body: [
+                        BareExpression(
+                            BinaryOp {
+                                operator: Plus,
+                                left: Variable(
+                                    "x",
+                                ),
+                                right: Variable(
+                                    "y",
+                                ),
+                            },
+                        ),
+                    ],
+                },
+                exported: false,
+            },
+            Declaration {
+                decl: FunctionDecl {
+                    name: "main",
+                    arguments: FunctionArgsList {
+                        args: [],
+                    },
+                    body: [
+                        BareExpression(
+                            FunctionCall {
+                                name: "log",
+                                args: [
+                                    FunctionCall {
+                                        name: "add",
+                                        args: [
+                                            Constant(
+                                                Int(
+                                                    2,
+                                                ),
+                                            ),
+                                            Constant(
+                                                Int(
+                                                    4,
+                                                ),
+                                            ),
+                                        ],
+                                    },
+                                ],
+                            },
+                        ),
+                    ],
+                },
+                exported: false,
+            },
+        ],
+    },
+)
