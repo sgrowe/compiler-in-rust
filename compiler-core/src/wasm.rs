@@ -64,6 +64,9 @@ impl<'a, Writer: Write> Wasm<Writer> for WasmModule<'a> {
 
         let body_format = format.increase_indent();
 
+        body_format.new_line_with_indent(writer)?;
+        write!(writer, "(type $logFuncSig (func (param i32)))")?;
+
         for func in &self.functions {
             func.write_text(writer, body_format)?;
         }
@@ -131,6 +134,7 @@ pub enum WasmInstruction<'a> {
     ConstI32(i32),
     AddI64,
     AddI32,
+    Call(&'a str),
 }
 
 impl<'a, Writer: Write> Wasm<Writer> for WasmInstruction<'a> {
@@ -145,6 +149,8 @@ impl<'a, Writer: Write> Wasm<Writer> for WasmInstruction<'a> {
             ConstI32(value) => write!(w, "i32.const {}", value),
             AddI64 => write!(w, "i64.add"),
             AddI32 => write!(w, "i32.add"),
+            Call("log") => write!(w, "call_indirect $logFuncSig"),
+            Call(name) => write!(w, "call ${}", name),
         }
     }
 }
@@ -209,11 +215,6 @@ mod tests {
         wasm.write_text(&mut out, WasmFormat::default()).unwrap();
 
         assert_snapshot!(snapshot, std::str::from_utf8(&out).unwrap());
-    }
-
-    #[test]
-    fn formats_empty_module() {
-        assert_wasm_output_matches(WasmModule::new(), "(module)");
     }
 
     #[test]

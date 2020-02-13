@@ -1,0 +1,49 @@
+---
+source: compiler-core/src/code_gen.rs
+expression: wasm
+---
+WasmModule {
+    functions: [
+        WasmFunction {
+            name: "add",
+            params: [
+                "x",
+                "y",
+            ],
+            return_type: Some(
+                I32,
+            ),
+            body: [
+                GetLocal(
+                    "x",
+                ),
+                GetLocal(
+                    "y",
+                ),
+                AddI32,
+            ],
+        },
+        WasmFunction {
+            name: "main",
+            params: [],
+            return_type: Some(
+                I32,
+            ),
+            body: [
+                ConstI32(
+                    2,
+                ),
+                ConstI32(
+                    4,
+                ),
+                Call(
+                    "add",
+                ),
+                Call(
+                    "log",
+                ),
+            ],
+        },
+    ],
+    exports: [],
+}
