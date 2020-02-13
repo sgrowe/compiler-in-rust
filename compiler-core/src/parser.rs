@@ -56,6 +56,8 @@ impl<'a> Parser<'a> {
         use super::keywords::Keyword::*;
 
         if let Some(token) = self.step()? {
+            println!("top level {:?}", token);
+
             match token {
                 Name(name) => Ok(TopLevelStatement::Declaration {
                     decl: self.declaration(name)?,
@@ -271,6 +273,18 @@ impl<'a> Parser<'a> {
                     self.function_call(name)
                 } else {
                     Ok(Expression::Variable(name))
+                }
+            }
+            OpenParen => {
+                let expr = self.expression(token.binding_power(), None)?;
+
+                match self.step()? {
+                    Some(CloseParen) => Ok(expr),
+                    Some(token) => Err(ParseError::UnexpectedToken(
+                        token,
+                        "parsing expression in brackets",
+                    )),
+                    None => Err(ParseError::UnexpectedEndOfInput),
                 }
             }
             _ => Err(ParseError::UnexpectedToken(

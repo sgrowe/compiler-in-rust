@@ -83,6 +83,56 @@ Ok(
                 },
                 exported: false,
             },
+            Declaration {
+                decl: Assignment {
+                    name: "w",
+                    expr: BinaryOp {
+                        operator: Multiply,
+                        left: Constant(
+                            Int(
+                                2,
+                            ),
+                        ),
+                        right: BinaryOp {
+                            operator: Plus,
+                            left: Variable(
+                                "x",
+                            ),
+                            right: Constant(
+                                Int(
+                                    1,
+                                ),
+                            ),
+                        },
+                    },
+                },
+                exported: false,
+            },
+            Declaration {
+                decl: Assignment {
+                    name: "v",
+                    expr: BinaryOp {
+                        operator: Plus,
+                        left: BinaryOp {
+                            operator: Multiply,
+                            left: Constant(
+                                Int(
+                                    2,
+                                ),
+                            ),
+                            right: Variable(
+                                "x",
+                            ),
+                        },
+                        right: Constant(
+                            Int(
+                                1,
+                            ),
+                        ),
+                    },
+                },
+                exported: false,
+            },
         ],
     },
 )
