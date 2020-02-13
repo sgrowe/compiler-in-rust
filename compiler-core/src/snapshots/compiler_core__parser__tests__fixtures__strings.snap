@@ -1,5 +1,5 @@
 ---
-source: src/parser.rs
+source: compiler-core/src/parser.rs
 expression: ast
 ---
 Ok(

@@ -1,4 +1,9 @@
 
 
-export fn add(x, y)
+fn add(x, y)
     x + y
+
+
+
+fn main()
+    log(add(2, 4))

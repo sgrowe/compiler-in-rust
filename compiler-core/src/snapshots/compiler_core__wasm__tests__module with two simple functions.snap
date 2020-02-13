@@ -1,5 +1,5 @@
 ---
-source: src/wasm.rs
+source: compiler-core/src/wasm.rs
 expression: "std::str::from_utf8(&out).unwrap()"
 ---
 (module

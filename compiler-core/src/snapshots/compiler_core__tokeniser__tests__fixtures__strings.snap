@@ -1,5 +1,5 @@
 ---
-source: src/tokeniser.rs
+source: compiler-core/src/tokeniser.rs
 expression: tokens
 ---
 [
