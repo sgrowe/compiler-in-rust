@@ -111,23 +111,15 @@ impl<'a> Parser<'a> {
         use self::Declaration::*;
         use FuncBodyStatement::*;
 
-        match self.peek_next_token()? {
-            Some(Equals) => {
-                self.step()?;
+        if let Some(Equals) = self.peek_next_token()? {
+            self.step()?;
 
-                Ok(Declaration(Assignment {
-                    name,
-                    expr: self.expression(0, None)?,
-                }))
-            }
-            Some(IndentDecr) => Ok(BareExpression(Expression::Variable(name))),
-            // Some(OpenParen) => {
-            //     self.step()?;
-
-            //     Ok(BareExpression(self.function_call(name)?))
-            // }
-            Some(_) => Ok(BareExpression(self.expression(0, Some(Token::Name(name)))?)),
-            None => Ok(BareExpression(Expression::Variable(name))),
+            Ok(Declaration(Assignment {
+                name,
+                expr: self.expression(0, None)?,
+            }))
+        } else {
+            Ok(BareExpression(self.expression(0, Some(Token::Name(name)))?))
         }
     }
 
