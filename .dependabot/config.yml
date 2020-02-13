@@ -3,6 +3,15 @@ update_configs:
   - package_manager: "rust:cargo"
     directory: "/compiler-core"
     update_schedule: "live"
+
   - package_manager: "rust:cargo"
     directory: "/compiler-frontend"
+    update_schedule: "live"
+
+  - package_manager: "rust:cargo"
+    directory: "/online-playground"
+    update_schedule: "live"
+
+  - package_manager: "javascript"
+    directory: "/online-playground"
     update_schedule: "live"
