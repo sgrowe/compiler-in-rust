@@ -56,8 +56,6 @@ impl<'a> Parser<'a> {
         use super::keywords::Keyword::*;
 
         if let Some(token) = self.step()? {
-            println!("top level {:?}", token);
-
             match token {
                 Name(name) => Ok(TopLevelStatement::Declaration {
                     decl: self.declaration(name)?,
@@ -129,11 +127,8 @@ impl<'a> Parser<'a> {
         let mut args = vec![];
 
         while let Some(token) = self.step()? {
-            println!("F call {}: {:?}", name, token);
-
             match token {
                 CloseParen => {
-                    println!("Close paren {}", name);
                     return Ok(Expression::FunctionCall { name, args });
                 }
                 _ => {
