@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::io;
 use std::io::Write;
 
@@ -64,9 +65,6 @@ impl<'a, Writer: Write> Wasm<Writer> for WasmModule<'a> {
 
         let body_format = format.increase_indent();
 
-        // body_format.new_line_with_indent(writer)?;
-        // write!(writer, "(type $logFuncSig (func (param i32)))")?;
-
         for func in &self.functions {
             func.write_text(writer, body_format)?;
         }
@@ -83,6 +81,7 @@ impl<'a, Writer: Write> Wasm<Writer> for WasmModule<'a> {
 pub struct WasmFunction<'a> {
     name: &'a str,
     params: Vec<&'a str>,
+    local_variables: HashSet<&'a str>,
     return_type: Option<WasmType>,
     body: Vec<WasmInstruction<'a>>,
 }
@@ -91,15 +90,21 @@ impl<'a> WasmFunction<'a> {
     pub fn new(
         name: &'a str,
         params: Vec<&'a str>,
+        local_variables: HashSet<&'a str>,
         return_type: Option<WasmType>,
         body: Vec<WasmInstruction<'a>>,
     ) -> WasmFunction<'a> {
         WasmFunction {
             name,
             params,
+            local_variables,
             return_type,
             body,
         }
+    }
+
+    pub fn add_local_variable(&mut self, name: &'a str) {
+        self.local_variables.insert(name);
     }
 }
 
@@ -115,6 +120,10 @@ impl<'a, Writer: Write> Wasm<Writer> for WasmFunction<'a> {
 
         if let Some(wasm_type) = self.return_type {
             write!(w, " (result {})", wasm_type.to_wasm_text())?;
+        }
+
+        for local in &self.local_variables {
+            write!(w, " (local ${} i32)", local)?;
         }
 
         let body_format = format.increase_indent();
@@ -226,7 +235,10 @@ mod tests {
 
     #[test]
     fn formats_empty_function() {
-        assert_wasm_output_matches(WasmFunction::new("f", vec![], None, vec![]), "(func $f)");
+        assert_wasm_output_matches(
+            WasmFunction::new("f", vec![], HashSet::new(), None, vec![]),
+            "(func $f)",
+        );
     }
 
     #[test]
@@ -234,6 +246,7 @@ mod tests {
         let func = WasmFunction::new(
             "my_func",
             vec!["arg_1", "arg_2"],
+            HashSet::new(),
             Some(WasmType::I64),
             vec![],
         );
@@ -255,6 +268,7 @@ mod tests {
             WasmFunction::new(
                 "get_magic_number",
                 vec![],
+                HashSet::new(),
                 Some(I64),
                 vec![ConstI64(10), ConstI64(5), AddI64],
             ),
@@ -265,6 +279,7 @@ mod tests {
             WasmFunction::new(
                 "add",
                 vec!["arg_1", "arg_2"],
+                HashSet::new(),
                 Some(I64),
                 vec![GetLocal("arg_1"), GetLocal("arg_2"), AddI64],
             ),

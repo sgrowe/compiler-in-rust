@@ -11,6 +11,7 @@ Ok(
                     "x",
                     "y",
                 ],
+                local_variables: {},
                 return_type: Some(
                     I32,
                 ),
@@ -25,8 +26,40 @@ Ok(
                 ],
             },
             WasmFunction {
+                name: "f",
+                params: [
+                    "x",
+                ],
+                local_variables: {
+                    "y",
+                },
+                return_type: Some(
+                    I32,
+                ),
+                body: [
+                    GetLocal(
+                        "x",
+                    ),
+                    ConstI32(
+                        2,
+                    ),
+                    AddI32,
+                    SetLocal(
+                        "y",
+                    ),
+                    GetLocal(
+                        "x",
+                    ),
+                    GetLocal(
+                        "y",
+                    ),
+                    MultiplyI32,
+                ],
+            },
+            WasmFunction {
                 name: "main",
                 params: [],
+                local_variables: {},
                 return_type: Some(
                     I32,
                 ),

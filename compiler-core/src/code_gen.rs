@@ -2,6 +2,7 @@ use super::ast::*;
 use super::operators::*;
 use super::tokens::*;
 use super::wasm::*;
+use std::collections::HashSet;
 
 pub fn ast_to_wasm<'a>(ast: &Ast<'a>) -> Result<WasmModule<'a>, CodeGenError> {
     use self::Declaration::*;
@@ -21,12 +22,21 @@ pub fn ast_to_wasm<'a>(ast: &Ast<'a>) -> Result<WasmModule<'a>, CodeGenError> {
 
                     let mut wasm_body = vec![];
 
+                    let mut locals = HashSet::new();
+
                     for statement in body {
-                        wasm_body.append(&mut compile_func_body_statement(statement)?);
+                        let (mut instructions, locals_vars) =
+                            compile_func_body_statement(statement)?;
+
+                        locals_vars.iter().for_each(|&name| {
+                            locals.insert(name);
+                        });
+
+                        wasm_body.append(&mut instructions);
                     }
 
                     module.add_function(
-                        WasmFunction::new(name, wasm_args, Some(WasmType::I32), wasm_body),
+                        WasmFunction::new(name, wasm_args, locals, Some(WasmType::I32), wasm_body),
                         *exported,
                     )
                 }
@@ -49,20 +59,25 @@ pub enum CodeGenError {
 
 fn compile_func_body_statement<'a>(
     statement: &FuncBodyStatement<'a>,
-) -> Result<Vec<WasmInstruction<'a>>, CodeGenError> {
-    match statement {
-        FuncBodyStatement::BareExpression(expr) => compile_expression(expr),
+) -> Result<(Vec<WasmInstruction<'a>>, Vec<&'a str>), CodeGenError> {
+    let mut locals = vec![];
+
+    let instructions = match statement {
+        FuncBodyStatement::BareExpression(expr) => compile_expression(expr)?,
         FuncBodyStatement::Declaration(Declaration::Assignment { name, expr }) => {
             let mut instr = compile_expression(expr)?;
+            locals.push(*name);
             instr.push(WasmInstruction::SetLocal(name));
-            Ok(instr)
+            instr
         }
         FuncBodyStatement::Declaration(Declaration::FunctionDecl {
             name: _,
             arguments: _,
             body: _,
-        }) => Err(CodeGenError::ClosuresNotSupportedYet),
-    }
+        }) => return Err(CodeGenError::ClosuresNotSupportedYet),
+    };
+
+    Ok((instructions, locals))
 }
 
 fn compile_expression<'a>(expr: &Expression<'a>) -> Result<Vec<WasmInstruction<'a>>, CodeGenError> {

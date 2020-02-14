@@ -36,6 +36,48 @@ Ok(
             },
             Declaration {
                 decl: FunctionDecl {
+                    name: "f",
+                    arguments: FunctionArgsList {
+                        args: [
+                            FunctionArg {
+                                name: "x",
+                            },
+                        ],
+                    },
+                    body: [
+                        Declaration(
+                            Assignment {
+                                name: "y",
+                                expr: BinaryOp {
+                                    operator: Plus,
+                                    left: Variable(
+                                        "x",
+                                    ),
+                                    right: Constant(
+                                        Int(
+                                            2,
+                                        ),
+                                    ),
+                                },
+                            },
+                        ),
+                        BareExpression(
+                            BinaryOp {
+                                operator: Multiply,
+                                left: Variable(
+                                    "x",
+                                ),
+                                right: Variable(
+                                    "y",
+                                ),
+                            },
+                        ),
+                    ],
+                },
+                exported: false,
+            },
+            Declaration {
+                decl: FunctionDecl {
                     name: "main",
                     arguments: FunctionArgsList {
                         args: [],
