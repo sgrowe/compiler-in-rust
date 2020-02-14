@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 use std::io;
 use std::io::Write;
 
@@ -81,7 +81,7 @@ impl<'a, Writer: Write> Wasm<Writer> for WasmModule<'a> {
 pub struct WasmFunction<'a> {
     name: &'a str,
     params: Vec<&'a str>,
-    local_variables: HashSet<&'a str>,
+    local_variables: BTreeSet<&'a str>,
     return_type: Option<WasmType>,
     body: Vec<WasmInstruction<'a>>,
 }
@@ -90,7 +90,7 @@ impl<'a> WasmFunction<'a> {
     pub fn new(
         name: &'a str,
         params: Vec<&'a str>,
-        local_variables: HashSet<&'a str>,
+        local_variables: BTreeSet<&'a str>,
         return_type: Option<WasmType>,
         body: Vec<WasmInstruction<'a>>,
     ) -> WasmFunction<'a> {
@@ -238,7 +238,7 @@ mod tests {
     #[test]
     fn formats_empty_function() {
         assert_wasm_output_matches(
-            WasmFunction::new("f", vec![], HashSet::new(), None, vec![]),
+            WasmFunction::new("f", vec![], BTreeSet::new(), None, vec![]),
             "(func $f)",
         );
     }
@@ -248,7 +248,7 @@ mod tests {
         let func = WasmFunction::new(
             "my_func",
             vec!["arg_1", "arg_2"],
-            HashSet::new(),
+            BTreeSet::new(),
             Some(WasmType::I64),
             vec![],
         );
@@ -270,7 +270,7 @@ mod tests {
             WasmFunction::new(
                 "get_magic_number",
                 vec![],
-                HashSet::new(),
+                BTreeSet::new(),
                 Some(I64),
                 vec![ConstI64(10), ConstI64(5), AddI64],
             ),
@@ -281,7 +281,7 @@ mod tests {
             WasmFunction::new(
                 "add",
                 vec!["arg_1", "arg_2"],
-                HashSet::new(),
+                BTreeSet::new(),
                 Some(I64),
                 vec![GetLocal("arg_1"), GetLocal("arg_2"), AddI64],
             ),

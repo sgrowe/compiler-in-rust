@@ -2,7 +2,7 @@ use super::ast::*;
 use super::operators::*;
 use super::tokens::*;
 use super::wasm::*;
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 pub fn ast_to_wasm<'a>(ast: &Ast<'a>) -> Result<WasmModule<'a>, CodeGenError> {
     use self::Declaration::*;
@@ -22,7 +22,7 @@ pub fn ast_to_wasm<'a>(ast: &Ast<'a>) -> Result<WasmModule<'a>, CodeGenError> {
 
                     let mut wasm_body = vec![];
 
-                    let mut locals = HashSet::new();
+                    let mut locals = BTreeSet::new();
 
                     for statement in body {
                         let (mut instructions, locals_vars) =
