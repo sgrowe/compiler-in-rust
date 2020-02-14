@@ -42,10 +42,16 @@ Ok(
                     },
                     body: [
                         BareExpression(
-                            FunctionCall {
-                                name: "log",
-                                args: [
-                                    FunctionCall {
+                            BinaryOp {
+                                operator: Multiply,
+                                left: Constant(
+                                    Int(
+                                        2,
+                                    ),
+                                ),
+                                right: BinaryOp {
+                                    operator: Minus,
+                                    left: FunctionCall {
                                         name: "add",
                                         args: [
                                             Constant(
@@ -60,7 +66,12 @@ Ok(
                                             ),
                                         ],
                                     },
-                                ],
+                                    right: Constant(
+                                        Int(
+                                            1,
+                                        ),
+                                    ),
+                                },
                             },
                         ),
                     ],

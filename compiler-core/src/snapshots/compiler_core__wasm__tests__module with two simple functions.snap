@@ -3,7 +3,6 @@ source: compiler-core/src/wasm.rs
 expression: "std::str::from_utf8(&out).unwrap()"
 ---
 (module
-  (type $logFuncSig (func (param i32)))
   (func $get_magic_number (result i64)
     i64.const 10
     i64.const 5

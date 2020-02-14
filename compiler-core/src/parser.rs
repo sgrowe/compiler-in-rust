@@ -89,6 +89,9 @@ impl<'a> Parser<'a> {
                 (Constant(_), _) => Ok(FuncBodyStatement::BareExpression(
                     self.expression(0, Some(token))?,
                 )),
+                (OpenParen, _) => Ok(FuncBodyStatement::BareExpression(
+                    self.expression(0, Some(token))?,
+                )),
                 (token, _) => Err(ParseError::UnexpectedToken(token, "function body")),
             }
         } else {

@@ -6,4 +6,4 @@ fn add(x, y)
 
 
 fn main()
-    log(add(2, 4))
+    2 * (add(2, 4) - 1)

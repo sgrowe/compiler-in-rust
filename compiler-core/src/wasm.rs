@@ -134,6 +134,8 @@ pub enum WasmInstruction<'a> {
     ConstI32(i32),
     AddI64,
     AddI32,
+    MinusI32,
+    MultiplyI32,
     Call(&'a str),
 }
 
@@ -149,6 +151,8 @@ impl<'a, Writer: Write> Wasm<Writer> for WasmInstruction<'a> {
             ConstI32(value) => write!(w, "i32.const {}", value),
             AddI64 => write!(w, "i64.add"),
             AddI32 => write!(w, "i32.add"),
+            MinusI32 => write!(w, "i32.sub"),
+            MultiplyI32 => write!(w, "i32.mul"),
             Call(name) => write!(w, "call ${}", name),
         }
     }

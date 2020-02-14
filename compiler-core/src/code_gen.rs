@@ -84,7 +84,8 @@ fn binary_op_to_wasm_instruction<'a>(op: BinaryOperator) -> WasmInstruction<'a> 
 
     match op {
         Plus => AddI32,
-        _ => panic!(),
+        Minus => MinusI32,
+        Multiply => MultiplyI32,
     }
 }
 

@@ -34,14 +34,19 @@ WasmModule {
                     2,
                 ),
                 ConstI32(
+                    2,
+                ),
+                ConstI32(
                     4,
                 ),
                 Call(
                     "add",
                 ),
-                Call(
-                    "log",
+                ConstI32(
+                    1,
                 ),
+                MinusI32,
+                MultiplyI32,
             ],
         },
     ],
