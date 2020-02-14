@@ -68,4 +68,5 @@ pub enum Expression<'a> {
         left: Box<Expression<'a>>,
         right: Box<Expression<'a>>,
     },
+    Negation(Box<Expression<'a>>),
 }

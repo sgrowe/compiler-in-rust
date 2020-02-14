@@ -31,17 +31,32 @@ Ok(
                     "x",
                 ],
                 local_variables: {
+                    "t",
                     "y",
                 },
                 return_type: Some(
                     I32,
                 ),
                 body: [
+                    ConstI32(
+                        3,
+                    ),
+                    ConstI32(
+                        -1,
+                    ),
+                    MultiplyI32,
+                    SetLocal(
+                        "t",
+                    ),
                     GetLocal(
                         "x",
                     ),
                     ConstI32(
                         2,
+                    ),
+                    AddI32,
+                    GetLocal(
+                        "t",
                     ),
                     AddI32,
                     SetLocal(

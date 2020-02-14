@@ -3,4 +3,5 @@ pub enum BinaryOperator {
     Plus,
     Minus,
     Multiply,
+    Divide,
 }

@@ -89,6 +89,14 @@ fn compile_expression<'a>(expr: &Expression<'a>) -> Result<Vec<WasmInstruction<'
         Constant(Float(float)) => vec![WasmInstruction::ConstF32(*float as f32)],
         Constant(Str(_)) => return Err(CodeGenError::StringsNotSupportedYet),
         Variable(name) => vec![WasmInstruction::GetLocal(name)],
+        Negation(expr) => {
+            let mut instr = compile_expression(expr)?;
+
+            instr.push(WasmInstruction::ConstI32(-1));
+            instr.push(WasmInstruction::MultiplyI32);
+
+            instr
+        }
         BinaryOp {
             operator,
             left,
@@ -126,6 +134,7 @@ fn binary_op_to_wasm_instruction<'a>(op: BinaryOperator) -> WasmInstruction<'a> 
         Plus => AddI32,
         Minus => MinusI32,
         Multiply => MultiplyI32,
+        Divide => SignedDivideI32,
     }
 }
 

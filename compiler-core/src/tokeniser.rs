@@ -58,6 +58,7 @@ impl<'a> Iterator for Tokeniser<'a> {
                 '+' => BinOp(Plus),
                 '*' => BinOp(Multiply),
                 '-' => BinOp(Minus),
+                '/' => BinOp(Divide),
                 ',' => Comma,
                 '=' => match self.peek_next_char() {
                     Some('>') => {

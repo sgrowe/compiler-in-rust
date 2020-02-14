@@ -1,5 +1,6 @@
 use super::ast::*;
 use super::binding_power::*;
+use super::operators::*;
 use super::tokeniser::*;
 use super::tokens::Token::*;
 use super::tokens::*;
@@ -272,6 +273,9 @@ impl<'a> Parser<'a> {
                 } else {
                     Ok(Expression::Variable(name))
                 }
+            }
+            BinOp(BinaryOperator::Minus) => {
+                Ok(Expression::Negation(Box::new(self.expression(100, None)?)))
             }
             OpenParen => {
                 let expr = self.expression(token.binding_power(), None)?;
