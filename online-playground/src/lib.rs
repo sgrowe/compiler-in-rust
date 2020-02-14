@@ -4,7 +4,7 @@ use compiler_core::wasm::*;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
-pub fn compile(source: &str) -> Result<String, ParseError> {
+fn compile(source: &str) -> Result<String, ParseError> {
     let ast = parse(&source)?;
 
     let wasm = ast_to_wasm(&ast);

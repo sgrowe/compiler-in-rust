@@ -15,6 +15,10 @@
         white-space: pre;
       }
     </style>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/wabt@1.0.12/index.js"
+    ></script>
     <script src="index.js" type="module"></script>
   </head>
 
@@ -26,18 +30,25 @@
     <form>
       <textarea id="input" class="code-editor">
 
-export fn add(x, y)
-    x + y
+fn add(x, y)
+  x + y
+
+
+fn main()
+  add(2, 4)
 
 </textarea
       >
     </form>
-
-    <h2>Compiled WASM</h2>
     <p id="loading">Loading...</p>
     <p id="error" style="color: hsl(348, 100%, 61%); display: none;">
       ⚠️ Compile error
     </p>
+
+    <h2>Program output</h2>
+    <p id="logs"></p>
+
+    <h2>Compiled WASM</h2>
     <pre><code id="output"></code></pre>
   </body>
 </html>

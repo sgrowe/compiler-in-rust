@@ -64,8 +64,8 @@ impl<'a, Writer: Write> Wasm<Writer> for WasmModule<'a> {
 
         let body_format = format.increase_indent();
 
-        body_format.new_line_with_indent(writer)?;
-        write!(writer, "(type $logFuncSig (func (param i32)))")?;
+        // body_format.new_line_with_indent(writer)?;
+        // write!(writer, "(type $logFuncSig (func (param i32)))")?;
 
         for func in &self.functions {
             func.write_text(writer, body_format)?;
@@ -149,7 +149,6 @@ impl<'a, Writer: Write> Wasm<Writer> for WasmInstruction<'a> {
             ConstI32(value) => write!(w, "i32.const {}", value),
             AddI64 => write!(w, "i64.add"),
             AddI32 => write!(w, "i32.add"),
-            Call("log") => write!(w, "call_indirect $logFuncSig"),
             Call(name) => write!(w, "call ${}", name),
         }
     }
