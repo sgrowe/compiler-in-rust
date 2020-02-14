@@ -44,12 +44,7 @@ Ok(
                         BareExpression(
                             BinaryOp {
                                 operator: Multiply,
-                                left: Constant(
-                                    Int(
-                                        2,
-                                    ),
-                                ),
-                                right: BinaryOp {
+                                left: BinaryOp {
                                     operator: Minus,
                                     left: FunctionCall {
                                         name: "add",
@@ -72,6 +67,11 @@ Ok(
                                         ),
                                     ),
                                 },
+                                right: Constant(
+                                    Int(
+                                        2,
+                                    ),
+                                ),
                             },
                         ),
                     ],

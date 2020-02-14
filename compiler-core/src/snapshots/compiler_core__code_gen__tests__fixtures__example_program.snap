@@ -2,53 +2,55 @@
 source: compiler-core/src/code_gen.rs
 expression: wasm
 ---
-WasmModule {
-    functions: [
-        WasmFunction {
-            name: "add",
-            params: [
-                "x",
-                "y",
-            ],
-            return_type: Some(
-                I32,
-            ),
-            body: [
-                GetLocal(
+Ok(
+    WasmModule {
+        functions: [
+            WasmFunction {
+                name: "add",
+                params: [
                     "x",
-                ),
-                GetLocal(
                     "y",
+                ],
+                return_type: Some(
+                    I32,
                 ),
-                AddI32,
-            ],
-        },
-        WasmFunction {
-            name: "main",
-            params: [],
-            return_type: Some(
-                I32,
-            ),
-            body: [
-                ConstI32(
-                    2,
+                body: [
+                    GetLocal(
+                        "x",
+                    ),
+                    GetLocal(
+                        "y",
+                    ),
+                    AddI32,
+                ],
+            },
+            WasmFunction {
+                name: "main",
+                params: [],
+                return_type: Some(
+                    I32,
                 ),
-                ConstI32(
-                    2,
-                ),
-                ConstI32(
-                    4,
-                ),
-                Call(
-                    "add",
-                ),
-                ConstI32(
-                    1,
-                ),
-                MinusI32,
-                MultiplyI32,
-            ],
-        },
-    ],
-    exports: [],
-}
+                body: [
+                    ConstI32(
+                        2,
+                    ),
+                    ConstI32(
+                        4,
+                    ),
+                    Call(
+                        "add",
+                    ),
+                    ConstI32(
+                        1,
+                    ),
+                    MinusI32,
+                    ConstI32(
+                        2,
+                    ),
+                    MultiplyI32,
+                ],
+            },
+        ],
+        exports: [],
+    },
+)

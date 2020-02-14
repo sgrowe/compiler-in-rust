@@ -7,7 +7,7 @@ use wasm_bindgen::JsCast;
 fn compile(source: &str) -> Result<String, ParseError> {
     let ast = parse(&source)?;
 
-    let wasm = ast_to_wasm(&ast);
+    let wasm = ast_to_wasm(&ast).unwrap();
 
     let mut output = vec![];
 

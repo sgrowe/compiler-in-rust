@@ -15,7 +15,7 @@ pub fn compile(source: &str) -> String {
 
     let ast = self::parser::parse(&source).unwrap();
 
-    let wasm = self::code_gen::ast_to_wasm(&ast);
+    let wasm = self::code_gen::ast_to_wasm(&ast).unwrap();
 
     wasm.write_text(&mut out, WasmFormat::default()).unwrap();
 

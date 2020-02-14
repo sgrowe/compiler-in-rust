@@ -23,7 +23,7 @@ fn main() -> std::io::Result<()> {
 
     let ast = parse(&source).unwrap();
 
-    let wasm = ast_to_wasm(&ast);
+    let wasm = ast_to_wasm(&ast).unwrap();
 
     create_dir_all("dist")?;
 

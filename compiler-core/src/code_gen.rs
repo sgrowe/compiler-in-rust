@@ -3,7 +3,7 @@ use super::operators::*;
 use super::tokens::*;
 use super::wasm::*;
 
-pub fn ast_to_wasm<'a>(ast: &Ast<'a>) -> WasmModule<'a> {
+pub fn ast_to_wasm<'a>(ast: &Ast<'a>) -> Result<WasmModule<'a>, CodeGenError> {
     use self::Declaration::*;
     use TopLevelStatement::*;
 
@@ -19,36 +19,60 @@ pub fn ast_to_wasm<'a>(ast: &Ast<'a>) -> WasmModule<'a> {
                 } => {
                     let wasm_args = arguments.args.iter().map(|arg| arg.name).collect();
 
-                    let wasm_body = body.iter().flat_map(compile_func_body_statement).collect();
+                    let mut wasm_body = vec![];
+
+                    for statement in body {
+                        wasm_body.append(&mut compile_func_body_statement(statement)?);
+                    }
 
                     module.add_function(
                         WasmFunction::new(name, wasm_args, Some(WasmType::I32), wasm_body),
                         *exported,
                     )
                 }
-                _ => panic!(),
+                Assignment { name: _, expr: _ } => {
+                    return Err(CodeGenError::TopLevelAssignmentNotYetSupported)
+                }
             },
         }
     }
 
-    module
+    Ok(module)
 }
 
-fn compile_func_body_statement<'a>(statement: &FuncBodyStatement<'a>) -> Vec<WasmInstruction<'a>> {
-    use FuncBodyStatement::*;
+#[derive(Debug, Copy, Clone)]
+pub enum CodeGenError {
+    TopLevelAssignmentNotYetSupported,
+    ClosuresNotSupportedYet,
+    StringsNotSupportedYet,
+}
 
+fn compile_func_body_statement<'a>(
+    statement: &FuncBodyStatement<'a>,
+) -> Result<Vec<WasmInstruction<'a>>, CodeGenError> {
     match statement {
-        BareExpression(expr) => compile_expression(expr),
-        _ => panic!(),
+        FuncBodyStatement::BareExpression(expr) => compile_expression(expr),
+        FuncBodyStatement::Declaration(Declaration::Assignment { name, expr }) => {
+            let mut instr = compile_expression(expr)?;
+            instr.push(WasmInstruction::SetLocal(name));
+            Ok(instr)
+        }
+        FuncBodyStatement::Declaration(Declaration::FunctionDecl {
+            name: _,
+            arguments: _,
+            body: _,
+        }) => Err(CodeGenError::ClosuresNotSupportedYet),
     }
 }
 
-fn compile_expression<'a>(expr: &Expression<'a>) -> Vec<WasmInstruction<'a>> {
+fn compile_expression<'a>(expr: &Expression<'a>) -> Result<Vec<WasmInstruction<'a>>, CodeGenError> {
     use self::Constant::*;
     use Expression::*;
 
-    match expr {
+    let instructions = match expr {
         Constant(Int(int)) => vec![WasmInstruction::ConstI32(*int as i32)],
+        Constant(Float(float)) => vec![WasmInstruction::ConstF32(*float as f32)],
+        Constant(Str(_)) => return Err(CodeGenError::StringsNotSupportedYet),
         Variable(name) => vec![WasmInstruction::GetLocal(name)],
         BinaryOp {
             operator,
@@ -57,8 +81,8 @@ fn compile_expression<'a>(expr: &Expression<'a>) -> Vec<WasmInstruction<'a>> {
         } => {
             let mut instr = vec![];
 
-            instr.append(&mut compile_expression(left));
-            instr.append(&mut compile_expression(right));
+            instr.append(&mut compile_expression(left)?);
+            instr.append(&mut compile_expression(right)?);
             instr.push(binary_op_to_wasm_instruction(*operator));
 
             instr
@@ -66,16 +90,17 @@ fn compile_expression<'a>(expr: &Expression<'a>) -> Vec<WasmInstruction<'a>> {
         FunctionCall { name, args } => {
             let mut instr = Vec::with_capacity(args.len() + 1);
 
-            args.iter().for_each(|expr| {
-                instr.append(&mut compile_expression(expr));
-            });
+            for expr in args {
+                instr.append(&mut compile_expression(expr)?);
+            }
 
             instr.push(WasmInstruction::Call(name));
 
             instr
         }
-        _ => panic!(),
-    }
+    };
+
+    Ok(instructions)
 }
 
 fn binary_op_to_wasm_instruction<'a>(op: BinaryOperator) -> WasmInstruction<'a> {

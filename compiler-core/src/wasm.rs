@@ -130,8 +130,10 @@ impl<'a, Writer: Write> Wasm<Writer> for WasmFunction<'a> {
 #[derive(Debug, Copy, Clone)]
 pub enum WasmInstruction<'a> {
     GetLocal(&'a str),
+    SetLocal(&'a str),
     ConstI64(i64),
     ConstI32(i32),
+    ConstF32(f32),
     AddI64,
     AddI32,
     MinusI32,
@@ -147,8 +149,10 @@ impl<'a, Writer: Write> Wasm<Writer> for WasmInstruction<'a> {
 
         match self {
             GetLocal(name) => write!(w, "local.get ${}", name),
+            SetLocal(name) => write!(w, "local.set ${}", name),
             ConstI64(value) => write!(w, "i64.const {}", value),
             ConstI32(value) => write!(w, "i32.const {}", value),
+            ConstF32(value) => write!(w, "f32.const {}", value),
             AddI64 => write!(w, "i64.add"),
             AddI32 => write!(w, "i32.add"),
             MinusI32 => write!(w, "i32.sub"),
