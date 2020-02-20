@@ -61,12 +61,5 @@ RUN apt-get update \
 RUN cargo install wasm-pack cargo-insta
 
 
-# Install rust analyser
-RUN git clone https://github.com/rust-analyzer/rust-analyzer && \
-    cd rust-analyzer/editors/code && \
-    npm i && \
-    npm run package
-
-
 # Switch back to dialog for any ad-hoc use of apt-get
 ENV DEBIAN_FRONTEND=dialog

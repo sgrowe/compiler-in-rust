@@ -7,11 +7,13 @@
   // Set *default* container specific settings.json values on container create.
   "settings": {
     "terminal.integrated.shell.linux": "/usr/bin/fish",
-    "lldb.executable": "/usr/bin/lldb"
+    "lldb.executable": "/usr/bin/lldb",
+    "rust-analyzer.rainbowHighlightingOn": true
   },
   // Add the IDs of extensions you want installed when the container is created.
   "extensions": [
     // "rust-lang.rust", - Using rust analyser instead
+    "matklad.rust-analyzer",
     "esbenp.prettier-vscode",
     "bungcip.better-toml",
     "vadimcn.vscode-lldb"
