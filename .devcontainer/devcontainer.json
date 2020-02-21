@@ -14,6 +14,7 @@
   "extensions": [
     // "rust-lang.rust", - Using rust analyser instead
     "matklad.rust-analyzer",
+    "serayuzgur.crates",
     "esbenp.prettier-vscode",
     "bungcip.better-toml",
     "vadimcn.vscode-lldb"
