@@ -4,6 +4,7 @@ use super::operators::*;
 use super::tokeniser::*;
 use super::tokens::Token::*;
 use super::tokens::*;
+use std::iter::Peekable;
 
 pub fn parse<'a>(source: &'a str) -> Result<Ast<'a>, ParseError<'a>> {
     Parser::of(tokenise(source)).parse()
@@ -11,33 +12,31 @@ pub fn parse<'a>(source: &'a str) -> Result<Ast<'a>, ParseError<'a>> {
 
 #[derive(Debug, Clone)]
 struct Parser<'a> {
-    next_token: Result<Option<Token<'a>>, ParseError<'a>>,
-    tokens: Tokeniser<'a>,
+    tokens: Peekable<Tokeniser<'a>>,
 }
 
-fn next_token<'a>(tokens: &mut Tokeniser<'a>) -> Result<Option<Token<'a>>, ParseError<'a>> {
-    match tokens.next() {
+fn unwrap_tokeniser_error<'a>(
+    token: Option<Result<Token<'a>, TokeniserError>>,
+) -> Result<Option<Token<'a>>, ParseError<'a>> {
+    match token {
         Some(result) => result.map_err(ParseError::TokeniserError).map(Some),
         None => Ok(None),
     }
 }
 
 impl<'a> Parser<'a> {
-    fn of(mut tokens: Tokeniser<'a>) -> Parser<'a> {
+    fn of(tokens: Tokeniser<'a>) -> Parser<'a> {
         Parser {
-            next_token: next_token(&mut tokens),
-            tokens,
+            tokens: tokens.peekable(),
         }
     }
 
     fn step(&mut self) -> Result<Option<Token<'a>>, ParseError<'a>> {
-        let current = self.next_token;
-        self.next_token = next_token(&mut self.tokens);
-        current
+        unwrap_tokeniser_error(self.tokens.next())
     }
 
-    fn peek_next_token(&self) -> Result<Option<Token<'a>>, ParseError<'a>> {
-        self.next_token
+    fn peek_next_token(&mut self) -> Result<Option<Token<'a>>, ParseError<'a>> {
+        unwrap_tokeniser_error(self.tokens.peek().cloned())
     }
 
     fn parse(&mut self) -> Result<Ast<'a>, ParseError<'a>> {
@@ -237,7 +236,7 @@ impl<'a> Parser<'a> {
         Ok(left)
     }
 
-    fn next_token_binding_power(&self) -> u32 {
+    fn next_token_binding_power(&mut self) -> u32 {
         match self.peek_next_token() {
             Ok(Some(token)) => token.binding_power(),
             _ => 0,

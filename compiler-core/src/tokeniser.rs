@@ -1,17 +1,14 @@
 use super::keywords::*;
 use super::tokens::*;
+use std::iter::Peekable;
 use std::str::CharIndices;
 
 use std::cmp::Ordering;
 
 pub fn tokenise<'a>(source: &'a str) -> Tokeniser<'a> {
-    let mut chars = source.char_indices();
-    let next_char = chars.next();
-
     Tokeniser {
         source,
-        chars,
-        next_char,
+        chars: source.char_indices().peekable(),
         indent_stack: Vec::with_capacity(8),
     }
 }
@@ -19,9 +16,7 @@ pub fn tokenise<'a>(source: &'a str) -> Tokeniser<'a> {
 #[derive(Debug, Clone)]
 pub struct Tokeniser<'a> {
     source: &'a str,
-    chars: CharIndices<'a>,
-    // the next char in the sequence so we can look ahead one char without consuming the iterator
-    next_char: Option<(usize, char)>,
+    chars: Peekable<CharIndices<'a>>,
     indent_stack: Vec<u16>, // u16 as hopefully people wont use many more that 65,000 spaces of indentation
 }
 
@@ -82,22 +77,20 @@ impl<'a> Iterator for Tokeniser<'a> {
         }
 
         if self.indent_stack.pop().is_some() {
-            return Some(Ok(IndentDecr));
+            Some(Ok(IndentDecr))
+        } else {
+            None
         }
-
-        None
     }
 }
 
 impl<'a> Tokeniser<'a> {
     fn step(&mut self) -> Option<(usize, char)> {
-        let current = self.next_char;
-        self.next_char = self.chars.next();
-        current
+        self.chars.next()
     }
 
-    fn peek_next_char(&self) -> Option<char> {
-        self.next_char.map(|(_, c)| c)
+    fn peek_next_char(&mut self) -> Option<char> {
+        self.chars.peek().map(|&(_, c)| c)
     }
 
     fn current_indent(&self) -> u16 {
@@ -152,7 +145,7 @@ impl<'a> Tokeniser<'a> {
     fn name(&mut self, start: usize) -> Token<'a> {
         let mut end = start + 1;
 
-        while let Some((i, c)) = self.next_char {
+        while let Some(&(i, c)) = self.chars.peek() {
             end = i;
 
             if c.is_alphabetic() || c == '_' {
@@ -173,7 +166,7 @@ impl<'a> Tokeniser<'a> {
         let mut end = start + 1;
         let mut is_float = false;
 
-        while let Some((i, c)) = self.next_char {
+        while let Some(&(i, c)) = self.chars.peek() {
             end = i;
 
             if c.is_numeric() {
