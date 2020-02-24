@@ -1,34 +1,11 @@
+pub use format::WasmFormat;
 use std::collections::BTreeSet;
-use std::io;
-use std::io::Write;
+use std::io::{self, Write};
+
+mod format;
 
 pub trait Wasm<Writer: io::Write> {
     fn write_text(&self, writer: &mut Writer, format: WasmFormat) -> io::Result<()>;
-}
-
-#[derive(Default, Debug, Copy, Clone)]
-pub struct WasmFormat {
-    indent: u32,
-}
-
-impl WasmFormat {
-    fn increase_indent(self) -> Self {
-        WasmFormat {
-            indent: self.indent + 2,
-        }
-    }
-
-    fn new_line_with_indent<W: Write>(self, writer: &mut W) -> io::Result<()> {
-        if self.indent > 0 {
-            writer.write_all(b"\n")?;
-
-            for _ in 0..self.indent {
-                writer.write_all(b" ")?;
-            }
-        }
-
-        Ok(())
-    }
 }
 
 #[derive(Debug, Clone)]
