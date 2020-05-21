@@ -16,5 +16,5 @@ log = "0.4.8"
 
 
 [dev-dependencies]
-insta = "0.15.0"
+insta = "0.16.0"
 test-case = "1.0.0"
