@@ -12,6 +12,7 @@ name = "compiler_core"
 
 
 [dependencies]
+log = "0.4.8"
 
 
 [dev-dependencies]
