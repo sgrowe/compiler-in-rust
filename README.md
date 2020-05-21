@@ -2,7 +2,7 @@
 
 This is a WIP attempt at creating a new programming language that compiles down to [WASM](https://webassembly.org/), with the compiler written in [Rust](https://www.rust-lang.org/).
 
-To have a look at what the syntax for the language looks like currently have a look in the [`src/fixtures`](src/fixtures) folder.
+To have a look at what the syntax for the language looks like currently have a look in the [`compiler-core/src/fixtures`](compiler-core/src/fixtures) folder.
 
 ## Goals
 
