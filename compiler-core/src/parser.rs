@@ -15,15 +15,6 @@ struct Parser<'a> {
     tokens: Peekable<Tokeniser<'a>>,
 }
 
-fn unwrap_tokeniser_error<'a>(
-    token: Option<Result<Token<'a>, TokeniserError>>,
-) -> Result<Option<Token<'a>>, ParseError<'a>> {
-    match token {
-        Some(result) => result.map_err(ParseError::TokeniserError).map(Some),
-        None => Ok(None),
-    }
-}
-
 impl<'a> Parser<'a> {
     fn of(tokens: Tokeniser<'a>) -> Parser<'a> {
         Parser {
@@ -31,12 +22,12 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn step(&mut self) -> Result<Option<Token<'a>>, ParseError<'a>> {
-        unwrap_tokeniser_error(self.tokens.next())
+    fn step(&mut self) -> Result<Option<Token<'a>>, TokeniserError> {
+        self.tokens.next().transpose()
     }
 
-    fn peek_next_token(&mut self) -> Result<Option<Token<'a>>, ParseError<'a>> {
-        unwrap_tokeniser_error(self.tokens.peek().cloned())
+    fn peek_next_token(&mut self) -> Result<Option<Token<'a>>, TokeniserError> {
+        self.tokens.peek().copied().transpose()
     }
 
     fn parse(&mut self) -> Result<Ast<'a>, ParseError<'a>> {
@@ -296,7 +287,6 @@ impl<'a> Parser<'a> {
     }
 }
 
-// TODO: maybe implement `From<TokeniserError>`
 #[derive(Debug, Copy, Clone)]
 pub enum ParseError<'a> {
     TokeniserError(TokeniserError),
@@ -305,6 +295,12 @@ pub enum ParseError<'a> {
     FunctionParseError,
     ErrorParsingFunctionArgs,
     IndentExpectedError,
+}
+
+impl<'a> From<TokeniserError> for ParseError<'a> {
+    fn from(error: TokeniserError) -> Self {
+        ParseError::TokeniserError(error)
+    }
 }
 
 #[cfg(test)]
