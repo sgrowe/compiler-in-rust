@@ -5,6 +5,8 @@ use std::str::CharIndices;
 
 use std::cmp::Ordering;
 
+pub type Result<X> = std::result::Result<X, TokeniserError>;
+
 pub fn tokenise<'a>(source: &'a str) -> Tokeniser<'a> {
     Tokeniser {
         source,
@@ -21,7 +23,7 @@ pub struct Tokeniser<'a> {
 }
 
 impl<'a> Iterator for Tokeniser<'a> {
-    type Item = Result<Token<'a>, TokeniserError>;
+    type Item = Result<Token<'a>>;
 
     fn next(&mut self) -> Option<Self::Item> {
         use super::operators::BinaryOperator::*;
@@ -132,7 +134,7 @@ impl<'a> Tokeniser<'a> {
         None
     }
 
-    fn string_constant(&mut self, start: usize) -> Result<Token<'a>, TokeniserError> {
+    fn string_constant(&mut self, start: usize) -> Result<Token<'a>> {
         while let Some((i, c)) = self.step() {
             if c == '"' {
                 return Ok(Token::Constant(Constant::Str(&self.source[start + 1..i])));

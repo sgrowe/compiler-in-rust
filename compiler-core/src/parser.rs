@@ -1,14 +1,14 @@
 use super::ast::*;
 use super::binding_power::*;
 use super::operators::*;
-use super::tokeniser::*;
+use super::tokeniser::{self, *};
 use super::tokens::Token::*;
 use super::tokens::*;
 use std::iter::Peekable;
 
-type ParseResult<'a, X> = Result<X, ParseError<'a>>;
+pub type Result<'a, X> = std::result::Result<X, ParseError<'a>>;
 
-pub fn parse<'a>(source: &'a str) -> ParseResult<'a, Ast<'a>> {
+pub fn parse<'a>(source: &'a str) -> Result<'a, Ast<'a>> {
     Parser::of(tokenise(source)).parse()
 }
 
@@ -24,15 +24,15 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn step(&mut self) -> Result<Option<Token<'a>>, TokeniserError> {
+    fn step(&mut self) -> tokeniser::Result<Option<Token<'a>>> {
         self.tokens.next().transpose()
     }
 
-    fn peek_next_token(&mut self) -> Result<Option<Token<'a>>, TokeniserError> {
+    fn peek_next_token(&mut self) -> tokeniser::Result<Option<Token<'a>>> {
         self.tokens.peek().copied().transpose()
     }
 
-    fn parse(&mut self) -> ParseResult<'a, Ast<'a>> {
+    fn parse(&mut self) -> Result<'a, Ast<'a>> {
         let mut ast = Ast::new();
 
         while let Some(_) = self.peek_next_token()? {
@@ -42,7 +42,7 @@ impl<'a> Parser<'a> {
         Ok(ast)
     }
 
-    fn top_level_statement(&mut self, is_export: bool) -> ParseResult<'a, TopLevelStatement<'a>> {
+    fn top_level_statement(&mut self, is_export: bool) -> Result<'a, TopLevelStatement<'a>> {
         use super::keywords::Keyword::*;
 
         if let Some(token) = self.step()? {
@@ -69,7 +69,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn func_body_statement(&mut self) -> ParseResult<'a, FuncBodyStatement<'a>> {
+    fn func_body_statement(&mut self) -> Result<'a, FuncBodyStatement<'a>> {
         use super::keywords::Keyword::*;
 
         if let Some(token) = self.step()? {
@@ -89,7 +89,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn declaration(&mut self, name: &'a str) -> ParseResult<'a, Declaration<'a>> {
+    fn declaration(&mut self, name: &'a str) -> Result<'a, Declaration<'a>> {
         match self.step()? {
             Some(Equals) => Ok(Declaration::Assignment {
                 name,
@@ -100,7 +100,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn named_statement(&mut self, name: &'a str) -> ParseResult<'a, FuncBodyStatement<'a>> {
+    fn named_statement(&mut self, name: &'a str) -> Result<'a, FuncBodyStatement<'a>> {
         use self::Declaration::*;
         use FuncBodyStatement::*;
 
@@ -116,7 +116,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn function_call(&mut self, name: &'a str) -> ParseResult<'a, Expression<'a>> {
+    fn function_call(&mut self, name: &'a str) -> Result<'a, Expression<'a>> {
         let mut args = vec![];
 
         while let Some(token) = self.step()? {
@@ -137,7 +137,7 @@ impl<'a> Parser<'a> {
         Err(ParseError::UnexpectedEndOfInput)
     }
 
-    fn function(&mut self) -> ParseResult<'a, Declaration<'a>> {
+    fn function(&mut self) -> Result<'a, Declaration<'a>> {
         match self.step()? {
             Some(Name(name)) => {
                 let arguments = self.function_arguments_list()?;
@@ -153,7 +153,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn function_arguments_list(&mut self) -> ParseResult<'a, FunctionArgsList<'a>> {
+    fn function_arguments_list(&mut self) -> Result<'a, FunctionArgsList<'a>> {
         match self.step()? {
             Some(OpenParen) => {
                 let mut args = Vec::new();
@@ -172,7 +172,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn func_arg(&mut self, name: &'a str) -> ParseResult<'a, FunctionArg<'a>> {
+    fn func_arg(&mut self, name: &'a str) -> Result<'a, FunctionArg<'a>> {
         if let Some(Comma) = self.peek_next_token()? {
             self.step()?;
         }
@@ -180,7 +180,7 @@ impl<'a> Parser<'a> {
         Ok(FunctionArg { name })
     }
 
-    fn function_body(&mut self) -> ParseResult<'a, Vec<FuncBodyStatement<'a>>> {
+    fn function_body(&mut self) -> Result<'a, Vec<FuncBodyStatement<'a>>> {
         let mut statements = Vec::new();
 
         match self.step()? {
@@ -205,7 +205,7 @@ impl<'a> Parser<'a> {
         &mut self,
         right_binding_power: u32,
         first_token: Option<Token<'a>>,
-    ) -> ParseResult<'a, Expression<'a>> {
+    ) -> Result<'a, Expression<'a>> {
         let mut current_token = match first_token {
             Some(t) => t,
             None => self
@@ -237,7 +237,7 @@ impl<'a> Parser<'a> {
         &mut self,
         token: Token<'a>,
         left: Expression<'a>,
-    ) -> ParseResult<'a, Expression<'a>> {
+    ) -> Result<'a, Expression<'a>> {
         match token {
             BinOp(operator) => {
                 let right = self.expression(token.binding_power(), None)?;
@@ -252,7 +252,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn null_denotation(&mut self, token: Token<'a>) -> ParseResult<'a, Expression<'a>> {
+    fn null_denotation(&mut self, token: Token<'a>) -> Result<'a, Expression<'a>> {
         match token {
             Constant(c) => Ok(Expression::Constant(c)),
             Name(name) => {
