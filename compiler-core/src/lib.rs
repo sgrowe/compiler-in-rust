@@ -1,5 +1,6 @@
 use self::wasm::*;
 
+pub mod analyser;
 pub mod ast;
 pub mod binding_power;
 pub mod code_gen;
@@ -17,7 +18,7 @@ pub fn compile(source: &str) -> Result<String, CompileError> {
 
     let wasm = self::code_gen::ast_to_wasm(&ast)?;
 
-    wasm.write_text(&mut out, WasmTextFormatOptions::default())?;
+    wasm.write_text(&mut out, WasmIndentation::default())?;
 
     Ok(out)
 }

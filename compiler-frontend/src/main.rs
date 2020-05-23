@@ -28,7 +28,7 @@ fn main() -> anyhow::Result<()> {
 
     let mut out = String::new();
 
-    wasm.write_text(&mut out, WasmTextFormatOptions::default())?;
+    wasm.write_text(&mut out, WasmIndentation::default())?;
 
     fs::write("dist/out.wat", out)?;
 

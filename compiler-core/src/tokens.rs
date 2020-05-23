@@ -6,6 +6,7 @@ pub enum Token<'a> {
     Equals,
     Pipe,
     Comma,
+    Colon,
     FatRightArrow,
     OpenParen,
     CloseParen,

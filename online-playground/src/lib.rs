@@ -11,7 +11,7 @@ fn compile(source: &str) -> Result<String, ParseError> {
 
     let mut output = String::new();
 
-    wasm.write_text(&mut output, WasmTextFormatOptions::default())
+    wasm.write_text(&mut output, WasmIndentation::default())
         .unwrap();
 
     Ok(output)

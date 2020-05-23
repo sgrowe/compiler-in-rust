@@ -51,6 +51,7 @@ impl<'a> Iterator for Tokeniser<'a> {
                     Ok(str_const) => str_const,
                     Err(error) => return Some(Err(error)),
                 },
+                ':' => Colon,
                 '|' => Pipe,
                 '+' => BinOp(Plus),
                 '*' => BinOp(Multiply),

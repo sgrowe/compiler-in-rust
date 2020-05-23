@@ -12,9 +12,25 @@ pub fn parse(source: &str) -> Result<Ast> {
     Parser::of(tokenise(source)).parse()
 }
 
+pub fn parse_iter(source: &str) -> Parser {
+    Parser::of(tokenise(source))
+}
+
 #[derive(Debug)]
 pub struct Parser<'a> {
     tokens: Peekable<Tokeniser<'a>>,
+}
+
+impl<'a> Iterator for Parser<'a> {
+    type Item = Result<'a, TopLevelStatement<'a>>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.tokens.peek().is_some() {
+            return Some(self.top_level_statement(false));
+        }
+
+        None
+    }
 }
 
 impl<'a> Parser<'a> {

@@ -1,13 +1,17 @@
 use std::fmt::{self, Write};
 
+pub trait Wasm<Writer: fmt::Write> {
+    fn write_text(&self, writer: &mut Writer, format: WasmIndentation) -> fmt::Result;
+}
+
 #[derive(Default, Debug, Copy, Clone)]
-pub struct WasmTextFormatOptions {
+pub struct WasmIndentation {
     indent: u32,
 }
 
-impl WasmTextFormatOptions {
+impl WasmIndentation {
     pub fn increase_indent(self) -> Self {
-        WasmTextFormatOptions {
+        WasmIndentation {
             indent: self.indent + 2,
         }
     }

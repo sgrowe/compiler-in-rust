@@ -25,6 +25,19 @@ pub enum Declaration<'a> {
     },
 }
 
+impl<'a> Declaration<'a> {
+    pub fn name(&self) -> &'a str {
+        match self {
+            Declaration::Assignment { name, expr: _ } => name,
+            Declaration::FunctionDecl {
+                name,
+                arguments: _,
+                body: _,
+            } => name,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum TopLevelStatement<'a> {
     Declaration {

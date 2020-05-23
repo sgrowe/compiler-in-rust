@@ -1,12 +1,10 @@
-pub use format::WasmTextFormatOptions;
+pub use format::{Wasm, WasmIndentation};
+pub use instruction::{WasmInstruction, WasmType};
 use std::collections::BTreeSet;
 use std::fmt::{self, Write};
 
 mod format;
-
-pub trait Wasm<Writer: fmt::Write> {
-    fn write_text(&self, writer: &mut Writer, format: WasmTextFormatOptions) -> fmt::Result;
-}
+mod instruction;
 
 #[derive(Debug, Default)]
 pub struct WasmModule<'a> {
@@ -30,20 +28,20 @@ impl<'a> WasmModule<'a> {
 }
 
 impl<'a, Writer: Write> Wasm<Writer> for WasmModule<'a> {
-    fn write_text(&self, writer: &mut Writer, format: WasmTextFormatOptions) -> fmt::Result {
-        write!(writer, "(module")?;
+    fn write_text(&self, w: &mut Writer, format: WasmIndentation) -> fmt::Result {
+        write!(w, "(module")?;
 
         let body_format = format.increase_indent();
 
         for func in &self.functions {
-            func.write_text(writer, body_format)?;
+            func.write_text(w, body_format)?;
         }
 
         for export in &self.exports {
-            export.write_text(writer, body_format)?;
+            export.write_text(w, body_format)?;
         }
 
-        write!(writer, ")")
+        write!(w, ")")
     }
 }
 
@@ -79,7 +77,7 @@ impl<'a> WasmFunction<'a> {
 }
 
 impl<'a, Writer: Write> Wasm<Writer> for WasmFunction<'a> {
-    fn write_text(&self, w: &mut Writer, format: WasmTextFormatOptions) -> fmt::Result {
+    fn write_text(&self, w: &mut Writer, format: WasmIndentation) -> fmt::Result {
         format.new_line_with_indent(w)?;
 
         write!(w, "(func ${}", self.name)?;
@@ -107,43 +105,6 @@ impl<'a, Writer: Write> Wasm<Writer> for WasmFunction<'a> {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub enum WasmInstruction<'a> {
-    GetLocal(&'a str),
-    SetLocal(&'a str),
-    ConstI64(i64),
-    ConstI32(i32),
-    ConstF32(f32),
-    AddI64,
-    AddI32,
-    MinusI32,
-    MultiplyI32,
-    SignedDivideI32,
-    Call(&'a str),
-}
-
-impl<'a, Writer: Write> Wasm<Writer> for WasmInstruction<'a> {
-    fn write_text(&self, w: &mut Writer, format: WasmTextFormatOptions) -> fmt::Result {
-        use WasmInstruction::*;
-
-        format.new_line_with_indent(w)?;
-
-        match self {
-            GetLocal(name) => write!(w, "local.get ${}", name),
-            SetLocal(name) => write!(w, "local.set ${}", name),
-            ConstI64(value) => write!(w, "i64.const {}", value),
-            ConstI32(value) => write!(w, "i32.const {}", value),
-            ConstF32(value) => write!(w, "f32.const {}", value),
-            AddI64 => write!(w, "i64.add"),
-            AddI32 => write!(w, "i32.add"),
-            MinusI32 => write!(w, "i32.sub"),
-            MultiplyI32 => write!(w, "i32.mul"),
-            SignedDivideI32 => write!(w, "i32.div_s"),
-            Call(name) => write!(w, "call ${}", name),
-        }
-    }
-}
-
-#[derive(Debug, Copy, Clone)]
 pub enum WasmExport<'a> {
     Function {
         wasm_name: &'a str,
@@ -151,36 +112,17 @@ pub enum WasmExport<'a> {
     },
 }
 
-#[derive(Debug, Copy, Clone)]
-pub enum WasmType {
-    I32,
-    I64,
-}
-
-impl WasmType {
-    fn to_wasm_text(self) -> &'static str {
-        match self {
-            WasmType::I64 => "i64",
-            WasmType::I32 => "i32",
-        }
-    }
-}
-
 impl<'a, Writer: Write> Wasm<Writer> for WasmExport<'a> {
-    fn write_text(&self, writer: &mut Writer, format: WasmTextFormatOptions) -> fmt::Result {
+    fn write_text(&self, w: &mut Writer, format: WasmIndentation) -> fmt::Result {
         use WasmExport::*;
 
-        format.new_line_with_indent(writer)?;
+        format.new_line_with_indent(w)?;
 
         match self {
             Function {
                 wasm_name,
                 exported_name,
-            } => write!(
-                writer,
-                "(export \"{}\" (func ${}))",
-                exported_name, wasm_name
-            ),
+            } => write!(w, "(export \"{}\" (func ${}))", exported_name, wasm_name),
         }
     }
 }
@@ -193,7 +135,7 @@ mod tests {
     fn assert_wasm_output_matches<Input: Wasm<String>>(wasm: Input, expected: &str) {
         let mut out = String::new();
 
-        wasm.write_text(&mut out, WasmTextFormatOptions::default())
+        wasm.write_text(&mut out, WasmIndentation::default())
             .unwrap();
 
         assert_eq!(out, expected);
@@ -202,7 +144,7 @@ mod tests {
     fn assert_wasm_snapshot_matches<Input: Wasm<String>>(snapshot: &str, wasm: Input) {
         let mut out = String::new();
 
-        wasm.write_text(&mut out, WasmTextFormatOptions::default())
+        wasm.write_text(&mut out, WasmIndentation::default())
             .unwrap();
 
         assert_snapshot!(snapshot, out);
