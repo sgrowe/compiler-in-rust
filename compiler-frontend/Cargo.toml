@@ -8,4 +8,5 @@ edition = "2018"
 
 [dependencies]
 compiler_core = { path = "../compiler-core" }
-clap = "2.33.0"
+clap = "2.33.1"
+anyhow = "1.0.31"

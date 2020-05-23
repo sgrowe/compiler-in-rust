@@ -8,7 +8,7 @@ pub fn ast_to_wasm<'a>(ast: &Ast<'a>) -> Result<WasmModule<'a>, CodeGenError> {
     use self::Declaration::*;
     use TopLevelStatement::*;
 
-    let mut module = WasmModule::new();
+    let mut module = WasmModule::default();
 
     for statement in &ast.statements {
         match statement {

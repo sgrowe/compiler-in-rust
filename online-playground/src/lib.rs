@@ -9,11 +9,12 @@ fn compile(source: &str) -> Result<String, ParseError> {
 
     let wasm = ast_to_wasm(&ast).unwrap();
 
-    let mut output = vec![];
+    let mut output = String::new();
 
-    wasm.write_text(&mut output, WasmFormat::default()).unwrap();
+    wasm.write_text(&mut output, WasmTextFormatOptions::default())
+        .unwrap();
 
-    Ok(std::str::from_utf8(&output).unwrap().to_owned())
+    Ok(output)
 }
 
 #[wasm_bindgen(start)]

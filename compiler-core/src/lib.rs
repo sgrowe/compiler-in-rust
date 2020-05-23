@@ -10,22 +10,23 @@ pub mod tokeniser;
 pub mod tokens;
 pub mod wasm;
 
-pub fn compile<'a>(source: &'a str) -> Result<String, CompileError<'a>> {
-    let mut out = Vec::new();
+pub fn compile(source: &str) -> Result<String, CompileError> {
+    let mut out = String::new();
 
     let ast = self::parser::parse(&source)?;
 
     let wasm = self::code_gen::ast_to_wasm(&ast)?;
 
-    wasm.write_text(&mut out, WasmFormat::default())?;
+    wasm.write_text(&mut out, WasmTextFormatOptions::default())?;
 
-    Ok(std::str::from_utf8(&out).unwrap().to_owned())
+    Ok(out)
 }
 
+#[derive(Debug)]
 pub enum CompileError<'a> {
     ParseError(parser::ParseError<'a>),
     CodeGenError(code_gen::CodeGenError),
-    IOError(std::io::Error),
+    FmtError(std::fmt::Error),
 }
 
 impl<'a> From<parser::ParseError<'a>> for CompileError<'a> {
@@ -40,8 +41,8 @@ impl<'a> From<code_gen::CodeGenError> for CompileError<'a> {
     }
 }
 
-impl<'a> From<std::io::Error> for CompileError<'a> {
-    fn from(error: std::io::Error) -> Self {
-        CompileError::IOError(error)
+impl<'a> From<std::fmt::Error> for CompileError<'a> {
+    fn from(error: std::fmt::Error) -> Self {
+        CompileError::FmtError(error)
     }
 }

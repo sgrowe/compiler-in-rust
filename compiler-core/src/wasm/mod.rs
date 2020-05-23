@@ -1,27 +1,20 @@
-pub use format::WasmFormat;
+pub use format::WasmTextFormatOptions;
 use std::collections::BTreeSet;
-use std::io::{self, Write};
+use std::fmt::{self, Write};
 
 mod format;
 
-pub trait Wasm<Writer: io::Write> {
-    fn write_text(&self, writer: &mut Writer, format: WasmFormat) -> io::Result<()>;
+pub trait Wasm<Writer: fmt::Write> {
+    fn write_text(&self, writer: &mut Writer, format: WasmTextFormatOptions) -> fmt::Result;
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Default)]
 pub struct WasmModule<'a> {
     functions: Vec<WasmFunction<'a>>,
     exports: Vec<WasmExport<'a>>,
 }
 
 impl<'a> WasmModule<'a> {
-    pub fn new() -> Self {
-        WasmModule {
-            functions: Vec::new(),
-            exports: Vec::new(),
-        }
-    }
-
     pub fn add_function(&mut self, func: WasmFunction<'a>, exported: bool) {
         let name = func.name;
 
@@ -37,7 +30,7 @@ impl<'a> WasmModule<'a> {
 }
 
 impl<'a, Writer: Write> Wasm<Writer> for WasmModule<'a> {
-    fn write_text(&self, writer: &mut Writer, format: WasmFormat) -> io::Result<()> {
+    fn write_text(&self, writer: &mut Writer, format: WasmTextFormatOptions) -> fmt::Result {
         write!(writer, "(module")?;
 
         let body_format = format.increase_indent();
@@ -54,7 +47,7 @@ impl<'a, Writer: Write> Wasm<Writer> for WasmModule<'a> {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct WasmFunction<'a> {
     name: &'a str,
     params: Vec<&'a str>,
@@ -86,7 +79,7 @@ impl<'a> WasmFunction<'a> {
 }
 
 impl<'a, Writer: Write> Wasm<Writer> for WasmFunction<'a> {
-    fn write_text(&self, w: &mut Writer, format: WasmFormat) -> io::Result<()> {
+    fn write_text(&self, w: &mut Writer, format: WasmTextFormatOptions) -> fmt::Result {
         format.new_line_with_indent(w)?;
 
         write!(w, "(func ${}", self.name)?;
@@ -129,7 +122,7 @@ pub enum WasmInstruction<'a> {
 }
 
 impl<'a, Writer: Write> Wasm<Writer> for WasmInstruction<'a> {
-    fn write_text(&self, w: &mut Writer, format: WasmFormat) -> io::Result<()> {
+    fn write_text(&self, w: &mut Writer, format: WasmTextFormatOptions) -> fmt::Result {
         use WasmInstruction::*;
 
         format.new_line_with_indent(w)?;
@@ -157,6 +150,7 @@ pub enum WasmExport<'a> {
         exported_name: &'a str,
     },
 }
+
 #[derive(Debug, Copy, Clone)]
 pub enum WasmType {
     I32,
@@ -173,7 +167,7 @@ impl WasmType {
 }
 
 impl<'a, Writer: Write> Wasm<Writer> for WasmExport<'a> {
-    fn write_text(&self, writer: &mut Writer, format: WasmFormat) -> io::Result<()> {
+    fn write_text(&self, writer: &mut Writer, format: WasmTextFormatOptions) -> fmt::Result {
         use WasmExport::*;
 
         format.new_line_with_indent(writer)?;
@@ -196,20 +190,22 @@ mod tests {
     use super::*;
     use insta::assert_snapshot;
 
-    fn assert_wasm_output_matches<Input: Wasm<Vec<u8>>>(wasm: Input, output: &str) {
-        let mut out = Vec::new();
+    fn assert_wasm_output_matches<Input: Wasm<String>>(wasm: Input, expected: &str) {
+        let mut out = String::new();
 
-        wasm.write_text(&mut out, WasmFormat::default()).unwrap();
+        wasm.write_text(&mut out, WasmTextFormatOptions::default())
+            .unwrap();
 
-        assert_eq!(std::str::from_utf8(&out).unwrap(), output);
+        assert_eq!(out, expected);
     }
 
-    fn assert_wasm_snapshot_matches<Input: Wasm<Vec<u8>>>(snapshot: &str, wasm: Input) {
-        let mut out = Vec::new();
+    fn assert_wasm_snapshot_matches<Input: Wasm<String>>(snapshot: &str, wasm: Input) {
+        let mut out = String::new();
 
-        wasm.write_text(&mut out, WasmFormat::default()).unwrap();
+        wasm.write_text(&mut out, WasmTextFormatOptions::default())
+            .unwrap();
 
-        assert_snapshot!(snapshot, std::str::from_utf8(&out).unwrap());
+        assert_snapshot!(snapshot, out);
     }
 
     #[test]
@@ -241,7 +237,7 @@ mod tests {
         use WasmInstruction::*;
         use WasmType::*;
 
-        let mut module = WasmModule::new();
+        let mut module = WasmModule::default();
 
         module.add_function(
             WasmFunction::new(

@@ -1,23 +1,23 @@
-use std::io::{self, Write};
+use std::fmt::{self, Write};
 
 #[derive(Default, Debug, Copy, Clone)]
-pub struct WasmFormat {
+pub struct WasmTextFormatOptions {
     indent: u32,
 }
 
-impl WasmFormat {
+impl WasmTextFormatOptions {
     pub fn increase_indent(self) -> Self {
-        WasmFormat {
+        WasmTextFormatOptions {
             indent: self.indent + 2,
         }
     }
 
-    pub fn new_line_with_indent<W: Write>(self, writer: &mut W) -> io::Result<()> {
+    pub fn new_line_with_indent<W: Write>(self, writer: &mut W) -> fmt::Result {
         if self.indent > 0 {
-            writer.write_all(b"\n")?;
+            writer.write_char('\n')?;
 
             for _ in 0..self.indent {
-                writer.write_all(b" ")?;
+                writer.write_char(' ')?;
             }
         }
 

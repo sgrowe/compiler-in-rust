@@ -2,11 +2,11 @@ use super::operators::*;
 use super::tokens::*;
 
 pub trait BindingPower {
-    fn binding_power(&self) -> u32;
+    fn binding_power(self) -> u32;
 }
 
 impl BindingPower for BinaryOperator {
-    fn binding_power(&self) -> u32 {
+    fn binding_power(self) -> u32 {
         use BinaryOperator::*;
 
         match self {
@@ -17,7 +17,7 @@ impl BindingPower for BinaryOperator {
 }
 
 impl<'a> BindingPower for Token<'a> {
-    fn binding_power(&self) -> u32 {
+    fn binding_power(self) -> u32 {
         match self {
             Token::BinOp(op) => op.binding_power(),
             _ => 0,

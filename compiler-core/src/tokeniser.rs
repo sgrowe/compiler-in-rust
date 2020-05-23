@@ -7,7 +7,7 @@ use std::cmp::Ordering;
 
 pub type Result<X> = std::result::Result<X, TokeniserError>;
 
-pub fn tokenise<'a>(source: &'a str) -> Tokeniser<'a> {
+pub fn tokenise(source: &str) -> Tokeniser {
     Tokeniser {
         source,
         chars: source.char_indices().peekable(),
@@ -15,11 +15,11 @@ pub fn tokenise<'a>(source: &'a str) -> Tokeniser<'a> {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Tokeniser<'a> {
     source: &'a str,
     chars: Peekable<CharIndices<'a>>,
-    indent_stack: Vec<u16>, // u16 as hopefully people wont use many more that 65,000 spaces of indentation
+    indent_stack: Vec<u16>, // u16 as hopefully people wont use many more than 65,000 spaces of indentation
 }
 
 impl<'a> Iterator for Tokeniser<'a> {
@@ -78,11 +78,7 @@ impl<'a> Iterator for Tokeniser<'a> {
             return Some(Ok(token));
         }
 
-        if self.indent_stack.pop().is_some() {
-            Some(Ok(IndentDecr))
-        } else {
-            None
-        }
+        self.indent_stack.pop().map(|_| Ok(IndentDecr))
     }
 }
 

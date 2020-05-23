@@ -2,10 +2,9 @@ use clap::{App, Arg};
 use compiler_core::code_gen::*;
 use compiler_core::parser::parse;
 use compiler_core::wasm::*;
-use std::fs::{create_dir_all, File};
-use std::io::BufWriter;
+use std::fs::{self, create_dir_all};
 
-fn main() -> std::io::Result<()> {
+fn main() -> anyhow::Result<()> {
     let matches = App::new("Lang")
         .version("0.1.0")
         .about("Rust version of lang")
@@ -27,9 +26,11 @@ fn main() -> std::io::Result<()> {
 
     create_dir_all("dist")?;
 
-    let mut output_file = BufWriter::new(File::create("dist/out.wat")?);
+    let mut out = String::new();
 
-    wasm.write_text(&mut output_file, WasmFormat::default())?;
+    wasm.write_text(&mut out, WasmTextFormatOptions::default())?;
+
+    fs::write("dist/out.wat", out)?;
 
     Ok(())
 }

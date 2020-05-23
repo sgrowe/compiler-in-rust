@@ -8,12 +8,12 @@ use std::iter::Peekable;
 
 pub type Result<'a, X> = std::result::Result<X, ParseError<'a>>;
 
-pub fn parse<'a>(source: &'a str) -> Result<'a, Ast<'a>> {
+pub fn parse(source: &str) -> Result<Ast> {
     Parser::of(tokenise(source)).parse()
 }
 
-#[derive(Debug, Clone)]
-struct Parser<'a> {
+#[derive(Debug)]
+pub struct Parser<'a> {
     tokens: Peekable<Tokeniser<'a>>,
 }
 
@@ -33,7 +33,7 @@ impl<'a> Parser<'a> {
     }
 
     fn parse(&mut self) -> Result<'a, Ast<'a>> {
-        let mut ast = Ast::new();
+        let mut ast = Ast::default();
 
         while let Some(_) = self.peek_next_token()? {
             ast.append_statement(self.top_level_statement(false)?);
@@ -73,16 +73,16 @@ impl<'a> Parser<'a> {
         use super::keywords::Keyword::*;
 
         if let Some(token) = self.step()? {
-            match (token, self.peek_next_token()?) {
-                (Name(name), _) => self.named_statement(name),
-                (Keyword(Function), _) => self.function().map(FuncBodyStatement::Declaration),
-                (Constant(_), _) => Ok(FuncBodyStatement::BareExpression(
+            match token {
+                Name(name) => self.named_statement(name),
+                Keyword(Function) => self.function().map(FuncBodyStatement::Declaration),
+                Constant(_) => Ok(FuncBodyStatement::BareExpression(
                     self.expression(0, Some(token))?,
                 )),
-                (OpenParen, _) => Ok(FuncBodyStatement::BareExpression(
+                OpenParen => Ok(FuncBodyStatement::BareExpression(
                     self.expression(0, Some(token))?,
                 )),
-                (token, _) => Err(ParseError::UnexpectedToken(token, "function body")),
+                token => Err(ParseError::UnexpectedToken(token, "function body")),
             }
         } else {
             Err(ParseError::UnexpectedEndOfInput)

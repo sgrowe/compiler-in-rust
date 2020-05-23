@@ -1,18 +1,12 @@
 use super::operators::*;
 use super::tokens::*;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct Ast<'a> {
     pub statements: Vec<TopLevelStatement<'a>>,
 }
 
 impl<'a> Ast<'a> {
-    pub fn new() -> Ast<'a> {
-        Ast {
-            statements: Vec::new(),
-        }
-    }
-
     pub fn append_statement(&mut self, statement: TopLevelStatement<'a>) {
         self.statements.push(statement)
     }
@@ -50,7 +44,7 @@ pub struct FunctionArgsList<'a> {
     pub args: Vec<FunctionArg<'a>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct FunctionArg<'a> {
     pub name: &'a str,
 }
