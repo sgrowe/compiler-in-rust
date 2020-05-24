@@ -4,7 +4,8 @@ use compiler_core::parser::parse;
 use compiler_core::wasm::*;
 use std::fs::{self, create_dir_all};
 
-fn main() -> anyhow::Result<()> {
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
     let matches = App::new("Lang")
         .version("0.1.0")
         .about("Rust version of lang")
@@ -18,7 +19,7 @@ fn main() -> anyhow::Result<()> {
 
     let file = matches.value_of("file").unwrap();
 
-    let source = std::fs::read_to_string(file)?;
+    let source = tokio::fs::read_to_string(file).await?;
 
     let ast = parse(&source).unwrap();
 
