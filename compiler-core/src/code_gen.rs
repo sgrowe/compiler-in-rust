@@ -20,19 +20,12 @@ pub fn ast_to_wasm<'a>(ast: &Ast<'a>) -> Result<WasmModule<'a>, CodeGenError> {
                 } => {
                     let wasm_args = arguments.args.iter().map(|arg| arg.name).collect();
 
-                    let mut wasm_body = vec![];
+                    let mut wasm_body = Vec::with_capacity(body.len());
 
                     let mut locals = BTreeSet::new();
 
                     for statement in body {
-                        let (mut instructions, locals_vars) =
-                            compile_func_body_statement(statement)?;
-
-                        locals_vars.iter().for_each(|&name| {
-                            locals.insert(name);
-                        });
-
-                        wasm_body.append(&mut instructions);
+                        compile_func_body_statement(statement, &mut wasm_body, &mut locals)?;
                     }
 
                     module.add_function(
@@ -59,16 +52,15 @@ pub enum CodeGenError {
 
 fn compile_func_body_statement<'a>(
     statement: &FuncBodyStatement<'a>,
-) -> Result<(Vec<WasmInstruction<'a>>, Vec<&'a str>), CodeGenError> {
-    let mut locals = vec![];
-
-    let instructions = match statement {
-        FuncBodyStatement::BareExpression(expr) => compile_expression(expr)?,
+    mut instructions: &mut Vec<WasmInstruction<'a>>,
+    locals: &mut BTreeSet<&'a str>,
+) -> Result<(), CodeGenError> {
+    match statement {
+        FuncBodyStatement::BareExpression(expr) => compile_expression(expr, &mut instructions)?,
         FuncBodyStatement::Declaration(Declaration::Assignment { name, expr }) => {
-            let mut instr = compile_expression(expr)?;
-            locals.push(*name);
-            instr.push(WasmInstruction::SetLocal(name));
-            instr
+            compile_expression(expr, &mut instructions)?;
+            locals.insert(name);
+            instructions.push(WasmInstruction::SetLocal(name));
         }
         FuncBodyStatement::Declaration(Declaration::FunctionDecl {
             name: _,
@@ -77,53 +69,58 @@ fn compile_func_body_statement<'a>(
         }) => return Err(CodeGenError::ClosuresNotSupportedYet),
     };
 
-    Ok((instructions, locals))
+    Ok(())
 }
 
-fn compile_expression<'a>(expr: &Expression<'a>) -> Result<Vec<WasmInstruction<'a>>, CodeGenError> {
+fn compile_expression<'a>(
+    expr: &Expression<'a>,
+    mut instr: &mut Vec<WasmInstruction<'a>>,
+) -> Result<(), CodeGenError> {
     use self::Constant::*;
     use Expression::*;
 
-    let instructions = match expr {
-        Constant(Int(int)) => vec![WasmInstruction::ConstI32(*int as i32)],
-        Constant(Float(float)) => vec![WasmInstruction::ConstF32(*float as f32)],
+    match expr {
+        Constant(Int(int)) => {
+            instr.push(WasmInstruction::ConstI32(*int as i32));
+        }
+        Constant(Float(float)) => {
+            instr.push(WasmInstruction::ConstF32(*float as f32));
+        }
         Constant(Str(_)) => return Err(CodeGenError::StringsNotSupportedYet),
-        Variable(name) => vec![WasmInstruction::GetLocal(name)],
+        Variable(name) => {
+            instr.push(WasmInstruction::GetLocal(name));
+        }
         Negation(expr) => {
-            let mut instr = compile_expression(expr)?;
+            compile_expression(expr, &mut instr)?;
 
+            instr.reserve(2);
             instr.push(WasmInstruction::ConstI32(-1));
             instr.push(WasmInstruction::MultiplyI32);
-
-            instr
         }
         BinaryOp {
             operator,
             left,
             right,
         } => {
-            let mut instr = vec![];
+            instr.reserve(3);
 
-            instr.append(&mut compile_expression(left)?);
-            instr.append(&mut compile_expression(right)?);
+            compile_expression(left, &mut instr)?;
+            compile_expression(right, &mut instr)?;
+
             instr.push(binary_op_to_wasm_instruction(*operator));
-
-            instr
         }
         FunctionCall { name, args } => {
-            let mut instr = Vec::with_capacity(args.len() + 1);
+            instr.reserve(args.len() + 1);
 
             for expr in args {
-                instr.append(&mut compile_expression(expr)?);
+                compile_expression(expr, &mut instr)?;
             }
 
             instr.push(WasmInstruction::Call(name));
-
-            instr
         }
     };
 
-    Ok(instructions)
+    Ok(())
 }
 
 fn binary_op_to_wasm_instruction<'a>(op: BinaryOperator) -> WasmInstruction<'a> {
