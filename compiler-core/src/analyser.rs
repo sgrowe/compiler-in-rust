@@ -1,5 +1,5 @@
 use crate::{
-    ast::{Declaration, TopLevelStatement},
+    ast::*,
     parser::{ParseError, Parser},
 };
 use std::collections::HashMap;
@@ -36,6 +36,36 @@ fn analyse(parser: Parser) -> Result<()> {
 
     let main = symbols.get("main").ok_or(AnalyserError::NoMain)?;
 
+    match main {
+        Symbol {
+            decl:
+                Declaration::FunctionDecl {
+                    name,
+                    arguments: FunctionArgsList { args },
+                    body,
+                },
+            exported,
+            usage_count,
+        } => {
+            let mut local_vars = Vec::with_capacity(args.len());
+
+            for FunctionArg { name } in args {
+                if local_vars.contains(name) {
+                    return Err(AnalyserError::DuplicateVariable(name));
+                }
+
+                local_vars.push(name);
+            }
+
+            for statement in body.iter().enumerate() {
+                // match statement {
+                //     FuncBodyStatement::Declaration()
+                // }
+            }
+        }
+        _ => return Err(AnalyserError::MainIsNotAFunction),
+    }
+
     Ok(())
 }
 
@@ -43,6 +73,7 @@ pub enum AnalyserError<'a> {
     ParseError(ParseError<'a>),
     DuplicateVariable(&'a str),
     NoMain,
+    MainIsNotAFunction,
 }
 
 impl<'a> From<ParseError<'a>> for AnalyserError<'a> {
