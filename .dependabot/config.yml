@@ -3,15 +3,31 @@ update_configs:
   - package_manager: "rust:cargo"
     directory: "/compiler-core"
     update_schedule: "weekly"
+    automerged_updates:
+      - match:
+          dependency_type: "all"
+          update_type: "semver:minor"
 
   - package_manager: "rust:cargo"
     directory: "/compiler-frontend"
     update_schedule: "weekly"
+    automerged_updates:
+      - match:
+          dependency_type: "all"
+          update_type: "semver:minor"
 
   - package_manager: "rust:cargo"
     directory: "/online-playground"
     update_schedule: "weekly"
+    automerged_updates:
+      - match:
+          dependency_type: "all"
+          update_type: "semver:minor"
 
   - package_manager: "javascript"
     directory: "/online-playground"
     update_schedule: "weekly"
+    automerged_updates:
+      - match:
+          dependency_type: "all"
+          update_type: "semver:minor"
