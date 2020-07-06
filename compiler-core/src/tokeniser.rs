@@ -1,9 +1,9 @@
 use super::keywords::*;
 use super::tokens::*;
+use std::cmp::Ordering;
 use std::iter::Peekable;
 use std::str::CharIndices;
-
-use std::cmp::Ordering;
+use tinyvec::TinyVec;
 
 pub type Result<X> = std::result::Result<X, TokeniserError>;
 
@@ -11,7 +11,7 @@ pub fn tokenise(source: &str) -> Tokeniser {
     Tokeniser {
         source,
         chars: source.char_indices().peekable(),
-        indent_stack: Vec::with_capacity(8),
+        indent_stack: TinyVec::new(),
     }
 }
 
@@ -19,7 +19,7 @@ pub fn tokenise(source: &str) -> Tokeniser {
 pub struct Tokeniser<'a> {
     source: &'a str,
     chars: Peekable<CharIndices<'a>>,
-    indent_stack: Vec<u16>, // u16 as hopefully people wont use many more than 65,000 spaces of indentation
+    indent_stack: TinyVec<[u16; 8]>, // u16 as hopefully people wont use many more than 65,000 spaces of indentation
 }
 
 impl<'a> Iterator for Tokeniser<'a> {
