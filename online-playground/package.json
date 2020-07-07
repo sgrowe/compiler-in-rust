@@ -10,7 +10,7 @@
     "serve": "python3 -m http.server --directory dist"
   },
   "devDependencies": {
-    "netlify-cli": "^2.54.0"
+    "netlify-cli": "^2.58.0"
   },
   "dependencies": {
     "wabt": "^1.0.17"
