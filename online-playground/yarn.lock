@@ -6229,10 +6229,10 @@ vary@~1.1.2:
   resolved "https://registry.yarnpkg.com/vary/-/vary-1.1.2.tgz#2299f02c6ded30d4a5961b0b9f74524a18f634fc"
   integrity sha1-IpnwLG3tMNSllhsLn3RSShj2NPw=
 
-wabt@^1.0.17:
-  version "1.0.17"
-  resolved "https://registry.yarnpkg.com/wabt/-/wabt-1.0.17.tgz#3ccdf58e70d181dbe31f8d728d20d2ca6e958864"
-  integrity sha512-9azQEFhJFVBBRmuFC1DZnQPAlzez2mSbYXkanBtG9MqJZllWGxc+DZHaNZsO4RHdDJkcSAOXplcmHAptfCgUqw==
+wabt@^1.0.18:
+  version "1.0.18"
+  resolved "https://registry.yarnpkg.com/wabt/-/wabt-1.0.18.tgz#064bf3a9de5b370686f0dfbf05e86bee17edf2a4"
+  integrity sha512-77UkGXDaIDIYCjkJByuBXxJOcpnjPuargP63ahWOejuhwBWIdfkp4AXNsGoNy7G0pnaJYfpBksvLHx3jL1BhDw==
 
 wait-port@^0.2.2:
   version "0.2.7"
