@@ -1,7 +1,7 @@
 use super::operators::*;
 use super::tokens::*;
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default)]
 pub struct Ast<'a> {
     pub statements: Vec<TopLevelStatement<'a>>,
 }
@@ -12,7 +12,7 @@ impl<'a> Ast<'a> {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum Declaration<'a> {
     Assignment {
         name: &'a str,
@@ -38,7 +38,7 @@ impl<'a> Declaration<'a> {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum TopLevelStatement<'a> {
     Declaration {
         decl: Declaration<'a>,
@@ -46,13 +46,13 @@ pub enum TopLevelStatement<'a> {
     },
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum FuncBodyStatement<'a> {
     Declaration(Declaration<'a>),
     BareExpression(Expression<'a>),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct FunctionArgsList<'a> {
     pub args: Vec<FunctionArg<'a>>,
 }
@@ -62,7 +62,7 @@ pub struct FunctionArg<'a> {
     pub name: &'a str,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum Expression<'a> {
     Variable(&'a str),
     Constant(Constant<'a>),
