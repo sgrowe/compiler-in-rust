@@ -12,10 +12,16 @@ name = "compiler_core"
 
 
 [dependencies]
-log = "0.4.8"
-tinyvec = { version = "0.3.3", features = ["alloc"] }
+log = "0.4.11"
+tinyvec = { version = "0.4.1", features = ["alloc"] }
 
 
 [dev-dependencies]
 insta = "0.16.1"
 test-case = "1.0.0"
+criterion = "0.3.3"
+
+
+[[bench]]
+name = "tokeniser_benchmark"
+harness = false
