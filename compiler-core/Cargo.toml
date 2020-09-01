@@ -13,7 +13,7 @@ name = "compiler_core"
 
 [dependencies]
 log = "0.4.11"
-tinyvec = { version = "0.4.1", features = ["alloc"] }
+tinyvec = { version = "1.0.0", features = ["alloc"] }
 
 
 [dev-dependencies]
