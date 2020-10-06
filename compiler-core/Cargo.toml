@@ -17,7 +17,7 @@ tinyvec = { version = "1.0.0", features = ["alloc"] }
 
 
 [dev-dependencies]
-insta = "0.16.1"
+insta = "1.0.0"
 test-case = "1.0.0"
 criterion = "0.3.3"
 
