@@ -13,11 +13,11 @@ name = "compiler_core"
 
 [dependencies]
 log = "0.4.11"
-tinyvec = { version = "1.0.0", features = ["alloc"] }
+tinyvec = { version = "1.0.1", features = ["alloc"] }
 
 
 [dev-dependencies]
-insta = "1.0.0"
+insta = "1.1.0"
 test-case = "1.0.0"
 criterion = "0.3.3"
 

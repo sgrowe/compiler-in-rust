@@ -9,10 +9,10 @@
     "deploy:prod": "netlify deploy --dir=dist/ --prod",
     "serve": "python3 -m http.server --directory dist"
   },
-  "devDependencies": {
-    "netlify-cli": "^2.67.2"
-  },
   "dependencies": {
     "wabt": "^1.0.19"
+  },
+  "devDependencies": {
+    "netlify-cli": "^2.67.3"
   }
 }
