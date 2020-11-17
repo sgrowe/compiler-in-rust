@@ -8235,10 +8235,10 @@ vfile@^4.0.0:
     unist-util-stringify-position "^2.0.0"
     vfile-message "^2.0.0"
 
-wabt@^1.0.19:
-  version "1.0.19"
-  resolved "https://registry.yarnpkg.com/wabt/-/wabt-1.0.19.tgz#3efa9ab225498975ececea7d2a827da0ef35118f"
-  integrity sha512-z/7XRZB8tPRW0XdE8HYbA95w2kjus5AwOHnJ5NT9PqzaNZ7z/zHnUdpNdB78TFMgWt+D/u01lg1jG6nWiFmyEw==
+wabt@^1.0.20:
+  version "1.0.20"
+  resolved "https://registry.yarnpkg.com/wabt/-/wabt-1.0.20.tgz#f8a6bf88bb439c881c42c39afb05e05cf29acf00"
+  integrity sha512-chkTTrB1XolSLs6lBk7/U5oXaxUMECeJOiMuiTHYgC8BS0EToJGFXuL5Dgggv2S+SS78GQ8YPovRrmUwT7pOlQ==
 
 wait-port@^0.2.2:
   version "0.2.9"
