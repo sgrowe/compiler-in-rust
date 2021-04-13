@@ -10,4 +10,4 @@ edition = "2018"
 compiler_core = { path = "../compiler-core" }
 clap = "2.33.3"
 anyhow = "1.0.34"
-tokio = { version = "0.3.3", features = ["rt-multi-thread", "macros", "fs"] }
+tokio = { version = "1.5.0", features = ["rt-multi-thread", "macros", "fs"] }
