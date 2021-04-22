@@ -13,6 +13,6 @@
     "wabt": "^1.0.19"
   },
   "devDependencies": {
-    "netlify-cli": "^2.68.0"
+    "netlify-cli": "^3.19.0"
   }
 }
