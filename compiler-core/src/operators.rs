@@ -4,4 +4,5 @@ pub enum BinaryOperator {
     Minus,
     Multiply,
     Divide,
+    DoubleEquals,
 }

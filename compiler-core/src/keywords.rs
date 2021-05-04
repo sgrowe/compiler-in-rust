@@ -6,6 +6,8 @@ pub enum Keyword {
     Export,
     Type,
     Function,
+    If,
+    Else,
 }
 
 pub fn get_matching_keyword(name: &str) -> Option<Keyword> {
@@ -16,27 +18,29 @@ pub fn get_matching_keyword(name: &str) -> Option<Keyword> {
         "export" => Export,
         "type" => Type,
         "fn" => Function,
+        "if" => If,
+        "else" => Else,
         _ => return None,
     };
 
     Some(keyword)
 }
 
-impl Keyword {
-    pub fn as_str(self) -> &'static str {
-        use Keyword::*;
-
-        match self {
-            Import => "import",
-            Export => "export",
-            Type => "type",
-            Function => "fn",
+impl From<Keyword> for &'static str {
+    fn from(keyword: Keyword) -> Self {
+        match keyword {
+            Keyword::Import => "import",
+            Keyword::Export => "export",
+            Keyword::Type => "type",
+            Keyword::Function => "fn",
+            Keyword::If => "if",
+            Keyword::Else => "else",
         }
     }
 }
 
 impl fmt::Display for Keyword {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.as_str())
+        write!(f, "{}", self)
     }
 }

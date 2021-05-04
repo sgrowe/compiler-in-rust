@@ -21,7 +21,7 @@ pub enum Declaration<'a> {
     FunctionDecl {
         name: &'a str,
         arguments: FunctionArgsList<'a>,
-        body: Vec<FuncBodyStatement<'a>>,
+        body: Vec<CodeBlockStatement<'a>>,
     },
 }
 
@@ -46,10 +46,22 @@ pub enum TopLevelStatement<'a> {
     },
 }
 
+pub type CodeBlock<'a> = Vec<CodeBlockStatement<'a>>;
+
 #[derive(Debug)]
-pub enum FuncBodyStatement<'a> {
+pub enum CodeBlockStatement<'a> {
     Declaration(Declaration<'a>),
     BareExpression(Expression<'a>),
+    IfStatement {
+        cases: Vec<IfStatementCase<'a>>,
+        else_case: Option<Box<CodeBlock<'a>>>,
+    },
+}
+
+#[derive(Debug)]
+pub struct IfStatementCase<'a> {
+    pub condition: Expression<'a>,
+    pub block: CodeBlock<'a>,
 }
 
 #[derive(Debug)]
@@ -71,8 +83,8 @@ pub enum Expression<'a> {
         args: Vec<Expression<'a>>,
     },
     BinaryOp {
-        operator: BinaryOperator,
         left: Box<Expression<'a>>,
+        operator: BinaryOperator,
         right: Box<Expression<'a>>,
     },
     Negation(Box<Expression<'a>>),

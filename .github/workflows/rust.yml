@@ -11,34 +11,35 @@ jobs:
         run: rustup update
 
       - name: Set Cargo home folder
-        run: echo "::set-env name=CARGO_HOME::$GITHUB_WORKSPACE/.cargo"
+        run: echo "CARGO_HOME=$GITHUB_WORKSPACE/.cargo" >> $GITHUB_ENV
 
       - name: Add Cargo bin folder to PATH
-        run: echo "::add-path::$CARGO_HOME/bin"
+        run: echo "$CARGO_HOME/bin" >> $GITHUB_PATH
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
 
       - uses: actions/checkout@v2
 
-      - name: Cache cargo dependencies
-        uses: actions/cache@v1
-        env:
-          cache-name: cache-cargo-home
+      - uses: actions/cache@v2
         with:
-          path: ${{ env.CARGO_HOME }}
-          # ^ Specify individual folders to cache according to [1] when it's supported (see [2]).
-          #
-          # [1]: https://doc.rust-lang.org/cargo/guide/cargo-home.html#caching-the-cargo-home-in-ci
-          # [2]: https://github.com/actions/cache/issues/16
-          key: ${{ runner.os }}-cargo-${{ env.cache-name }}-${{ hashFiles('Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-${{ env.cache-name }}-
-            ${{ runner.os }}-cargo-
-            ${{ runner.os }}-
-
-      - name: Build
-        run: cargo build --verbose
+          path: |
+            ${{ env.CARGO_HOME }}/registry/index/
+            ${{ env.CARGO_HOME }}/registry/cache/
+            ${{ env.CARGO_HOME }}/git/db/
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Test
-        run: cargo test --verbose
+        run: cargo test --release
+
+      - uses: actions/cache@v2
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
       - name: Install online playground dependencies
         run: |

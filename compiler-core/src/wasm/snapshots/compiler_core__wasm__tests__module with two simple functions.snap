@@ -1,14 +1,14 @@
 ---
-source: compiler-core/src/wasm.rs
-expression: "std::str::from_utf8(&out).unwrap()"
+source: compiler-core/src/wasm/mod.rs
+expression: out
 ---
 (module
-  (func $get_magic_number (result i64)
-    i64.const 10
-    i64.const 5
-    i64.add)
-  (func $add (param $arg_1 i32) (param $arg_2 i32) (result i64)
+  (func $get_magic_number (result i32)
+    i32.const 10
+    i32.const 5
+    i32.add)
+  (func $add (param $arg_1 i32) (param $arg_2 i32) (result i32)
     local.get $arg_1
     local.get $arg_2
-    i64.add)
+    i32.add)
   (export "add" (func $add)))
