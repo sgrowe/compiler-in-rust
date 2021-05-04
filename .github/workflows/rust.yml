@@ -31,11 +31,8 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Build
-        run: cargo build --verbose --release
-
       - name: Test
-        run: cargo test --verbose --release
+        run: cargo test --release
 
       - uses: actions/cache@v2
         with:
