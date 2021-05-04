@@ -12,15 +12,15 @@ name = "compiler_core"
 
 
 [dependencies]
-log = "0.4.11"
-tinyvec = { version = "1.0.1", features = ["alloc"] }
+log = "0.4.14"
+tinyvec = { version = "1.2.0", features = ["alloc"] }
 
 
 [dev-dependencies]
 anyhow = "1.0.40"
-criterion = "0.3.3"
-insta = "1.1.0"
-test-case = "1.0.0"
+criterion = "0.3.4"
+insta = "1.7.1"
+test-case = "1.1.0"
 wasmtime = "0.26.0"
 
 
