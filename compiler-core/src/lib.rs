@@ -47,3 +47,42 @@ impl<'a> From<std::fmt::Error> for CompileError<'a> {
         CompileError::FmtError(error)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use test_case::test_case;
+    use wasmtime::*;
+
+    #[test_case("fibonacci", 0, 0)]
+    #[test_case("fibonacci", 1, 1)]
+    #[test_case("fibonacci", 10, 55)]
+    #[test_case("fibonacci", 12, 144)]
+    fn program<Args>(name: &str, args: Args, expected: i32)
+    where
+        Args: WasmParams,
+    {
+        let code = fs::read_to_string(&format!("src/fixtures/{}.lang", name)).unwrap();
+
+        let wasm = compile(&code).unwrap();
+
+        let engine = Engine::default();
+
+        let store = Store::new(&engine);
+
+        let module = Module::new(&engine, &wasm).unwrap();
+
+        let instance = Instance::new(&store, &module, &[]).unwrap();
+
+        let main = instance
+            .get_func("main")
+            .expect("`main` was not an exported function");
+
+        let answer = main.typed::<Args, i32>().unwrap();
+
+        let result = answer.call(args).unwrap();
+
+        assert_eq!(result, expected);
+    }
+}

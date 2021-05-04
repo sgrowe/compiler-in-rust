@@ -1,5 +1,5 @@
-use super::keywords::*;
-use super::tokens::*;
+use crate::keywords::*;
+use crate::tokens::*;
 use std::cmp::Ordering;
 use std::iter::Peekable;
 use std::str::CharIndices;
@@ -12,14 +12,18 @@ pub fn tokenise(source: &str) -> Tokeniser {
         source,
         chars: source.char_indices().peekable(),
         indent_stack: TinyVec::new(),
+        current_line_indent: 0,
     }
 }
+
+type Indent = u16; // u16 as hopefully people wont use many more than 65,000 spaces of indentation
 
 #[derive(Debug)]
 pub struct Tokeniser<'a> {
     source: &'a str,
     chars: Peekable<CharIndices<'a>>,
-    indent_stack: TinyVec<[u16; 8]>, // u16 as hopefully people wont use many more than 65,000 spaces of indentation
+    indent_stack: TinyVec<[Indent; 14]>,
+    current_line_indent: Indent,
 }
 
 impl<'a> Iterator for Tokeniser<'a> {
@@ -29,22 +33,22 @@ impl<'a> Iterator for Tokeniser<'a> {
         use super::operators::BinaryOperator::*;
         use Token::*;
 
+        if self.indent_level() > self.current_line_indent {
+            self.indent_stack.pop();
+
+            return Some(Ok(IndentDecr));
+        }
+
         while let Some((i, c)) = self.step() {
-            match c {
-                ' ' => {
-                    continue;
-                }
-                '\n' | '\r' => {
-                    if let Some(token) = self.newline() {
-                        return Some(Ok(token));
-                    }
-
-                    continue;
-                }
-                _ => {}
-            }
-
             let token = match c {
+                // handle whitespace
+                ' ' => continue,
+                '\n' | '\r' => match self.newline() {
+                    Some(token) => token,
+                    None => continue,
+                },
+
+                // actual tokens
                 '(' => OpenParen,
                 ')' => CloseParen,
                 '"' => match self.string_constant(i) {
@@ -63,6 +67,10 @@ impl<'a> Iterator for Tokeniser<'a> {
                         self.step();
                         FatRightArrow
                     }
+                    Some('=') => {
+                        self.step();
+                        BinOp(DoubleEquals)
+                    }
                     _ => Equals,
                 },
                 _ => {
@@ -71,7 +79,7 @@ impl<'a> Iterator for Tokeniser<'a> {
                     } else if c.is_numeric() {
                         self.number(i)
                     } else {
-                        return None;
+                        todo!("Unexpected char: {}", c)
                     }
                 }
             };
@@ -92,28 +100,29 @@ impl<'a> Tokeniser<'a> {
         self.chars.peek().map(|&(_, c)| c)
     }
 
-    fn current_indent(&self) -> u16 {
-        self.indent_stack.last().copied().unwrap_or(0)
+    fn indent_level(&self) -> Indent {
+        self.indent_stack.last().copied().unwrap_or_default()
     }
 
+    // outputs tokens on indentation change
     fn newline(&mut self) -> Option<Token<'a>> {
         use Token::{IndentDecr, IndentIncr};
 
-        let mut indent = 0;
+        self.current_line_indent = 0;
 
         while let Some(c) = self.peek_next_char() {
             match c {
                 ' ' => {
-                    indent += 1;
+                    self.current_line_indent += 1;
                 }
                 '\n' | '\r' => {
                     // ignore blank lines
-                    indent = 0;
+                    self.current_line_indent = 0;
                 }
                 _ => {
-                    return match indent.cmp(&self.current_indent()) {
+                    return match self.current_line_indent.cmp(&self.indent_level()) {
                         Ordering::Greater => {
-                            self.indent_stack.push(indent);
+                            self.indent_stack.push(self.current_line_indent);
                             Some(IndentIncr)
                         }
                         Ordering::Less => {
@@ -131,6 +140,7 @@ impl<'a> Tokeniser<'a> {
         None
     }
 
+    // TODO: single quoted strings
     fn string_constant(&mut self, start: usize) -> Result<Token<'a>> {
         while let Some((i, c)) = self.step() {
             if c == '"' {
@@ -202,16 +212,15 @@ mod tests {
     use std::fs;
     use test_case::test_case;
 
-    #[test_case("src/fixtures/strings.lang"; "strings")]
-    #[test_case("src/fixtures/maths.lang"; "maths")]
-    #[test_case("src/fixtures/functions.lang"; "functions")]
-    fn fixtures(fixture_file_name: &str) -> std::io::Result<()> {
-        let contents = fs::read_to_string(fixture_file_name)?;
+    #[test_case("strings")]
+    #[test_case("maths")]
+    #[test_case("functions")]
+    #[test_case("fibonacci")]
+    fn fixtures(name: &str) {
+        let contents = fs::read_to_string(&format!("src/fixtures/{}.lang", name)).unwrap();
 
         let tokens = tokenise(&contents).collect::<Vec<_>>();
 
         assert_debug_snapshot!(tokens);
-
-        Ok(())
     }
 }

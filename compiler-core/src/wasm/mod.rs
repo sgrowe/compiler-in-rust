@@ -1,5 +1,5 @@
 pub use format::{Wasm, WasmIndentation};
-pub use instruction::{WasmInstruction, WasmType};
+pub use instruction::{WasmBlock, WasmInstr, WasmType};
 use std::collections::BTreeSet;
 use std::fmt::{self, Write};
 
@@ -51,7 +51,7 @@ pub struct WasmFunction<'a> {
     params: Vec<&'a str>,
     local_variables: BTreeSet<&'a str>,
     return_type: Option<WasmType>,
-    body: Vec<WasmInstruction<'a>>,
+    body: WasmBlock<'a>,
 }
 
 impl<'a> WasmFunction<'a> {
@@ -60,7 +60,7 @@ impl<'a> WasmFunction<'a> {
         params: Vec<&'a str>,
         local_variables: BTreeSet<&'a str>,
         return_type: Option<WasmType>,
-        body: Vec<WasmInstruction<'a>>,
+        body: WasmBlock<'a>,
     ) -> WasmFunction<'a> {
         WasmFunction {
             name,
@@ -164,19 +164,19 @@ mod tests {
             "my_func",
             vec!["arg_1", "arg_2"],
             BTreeSet::new(),
-            Some(WasmType::I64),
+            Some(WasmType::I32),
             vec![],
         );
 
         assert_wasm_output_matches(
             func,
-            "(func $my_func (param $arg_1 i32) (param $arg_2 i32) (result i64))",
+            "(func $my_func (param $arg_1 i32) (param $arg_2 i32) (result i32))",
         );
     }
 
     #[test]
     fn formats_module_with_functions() {
-        use WasmInstruction::*;
+        use WasmInstr::*;
         use WasmType::*;
 
         let mut module = WasmModule::default();
@@ -186,8 +186,8 @@ mod tests {
                 "get_magic_number",
                 vec![],
                 BTreeSet::new(),
-                Some(I64),
-                vec![ConstI64(10), ConstI64(5), AddI64],
+                Some(I32),
+                vec![ConstI32(10), ConstI32(5), AddI32],
             ),
             false,
         );
@@ -197,8 +197,8 @@ mod tests {
                 "add",
                 vec!["arg_1", "arg_2"],
                 BTreeSet::new(),
-                Some(I64),
-                vec![GetLocal("arg_1"), GetLocal("arg_2"), AddI64],
+                Some(I32),
+                vec![GetLocal("arg_1"), GetLocal("arg_2"), AddI32],
             ),
             true,
         );

@@ -50,23 +50,70 @@ pub enum CodeGenError {
     StringsNotSupportedYet,
 }
 
+fn compile_code_block<'a>(
+    block: &CodeBlock<'a>,
+) -> Result<(Vec<WasmInstr<'a>>, BTreeSet<&'a str>), CodeGenError> {
+    let mut instr = Vec::with_capacity(block.len()); // generally at least one instruction per statement
+
+    let mut locals = BTreeSet::new();
+
+    for s in block {
+        compile_func_body_statement(s, &mut instr, &mut locals)?;
+    }
+
+    Ok((instr, locals))
+}
+
 fn compile_func_body_statement<'a>(
-    statement: &FuncBodyStatement<'a>,
-    mut instructions: &mut Vec<WasmInstruction<'a>>,
+    statement: &CodeBlockStatement<'a>,
+    mut instructions: &mut Vec<WasmInstr<'a>>,
     locals: &mut BTreeSet<&'a str>,
 ) -> Result<(), CodeGenError> {
     match statement {
-        FuncBodyStatement::BareExpression(expr) => compile_expression(expr, &mut instructions)?,
-        FuncBodyStatement::Declaration(Declaration::Assignment { name, expr }) => {
+        CodeBlockStatement::BareExpression(expr) => compile_expression(expr, &mut instructions)?,
+        CodeBlockStatement::Declaration(Declaration::Assignment { name, expr }) => {
             compile_expression(expr, &mut instructions)?;
             locals.insert(name);
-            instructions.push(WasmInstruction::SetLocal(name));
+            instructions.push(WasmInstr::SetLocal(name));
         }
-        FuncBodyStatement::Declaration(Declaration::FunctionDecl {
-            name: _,
-            arguments: _,
-            body: _,
-        }) => return Err(CodeGenError::ClosuresNotSupportedYet),
+        CodeBlockStatement::Declaration(Declaration::FunctionDecl { .. }) => {
+            return Err(CodeGenError::ClosuresNotSupportedYet)
+        }
+        CodeBlockStatement::IfStatement { cases, else_case } => {
+            let mut fallback = match else_case {
+                Some(block) => {
+                    let (instr, else_locals) = compile_code_block(&block)?;
+
+                    locals.extend(else_locals);
+
+                    Some(instr)
+                }
+                None => None,
+            };
+
+            for IfStatementCase { condition, block } in cases.iter().rev() {
+                let mut wasm_cond = Vec::new();
+
+                compile_expression(&condition, &mut wasm_cond)?;
+
+                let (then, then_locals) = compile_code_block(&block)?;
+
+                locals.extend(then_locals);
+
+                let instr = WasmInstr::If {
+                    result_type: WasmType::I32,
+                    condition: wasm_cond,
+                    then,
+                    else_: fallback,
+                };
+
+                fallback = Some(vec![instr])
+            }
+
+            if let Some(last_if) = fallback {
+                instructions.extend(last_if);
+            }
+        }
     };
 
     Ok(())
@@ -74,28 +121,28 @@ fn compile_func_body_statement<'a>(
 
 fn compile_expression<'a>(
     expr: &Expression<'a>,
-    mut instr: &mut Vec<WasmInstruction<'a>>,
+    mut instr: &mut Vec<WasmInstr<'a>>,
 ) -> Result<(), CodeGenError> {
     use self::Constant::*;
     use Expression::*;
 
     match expr {
-        Constant(Int(int)) => {
-            instr.push(WasmInstruction::ConstI32(*int as i32));
+        &Constant(Int(int)) => {
+            instr.push(WasmInstr::ConstI32(int as i32));
         }
-        Constant(Float(float)) => {
-            instr.push(WasmInstruction::ConstF32(*float as f32));
+        &Constant(Float(float)) => {
+            instr.push(WasmInstr::ConstF32(float as f32));
         }
         Constant(Str(_)) => return Err(CodeGenError::StringsNotSupportedYet),
         Variable(name) => {
-            instr.push(WasmInstruction::GetLocal(name));
+            instr.push(WasmInstr::GetLocal(name));
         }
         Negation(expr) => {
             compile_expression(expr, &mut instr)?;
 
             instr.reserve(2);
-            instr.push(WasmInstruction::ConstI32(-1));
-            instr.push(WasmInstruction::MultiplyI32);
+            instr.push(WasmInstr::ConstI32(-1));
+            instr.push(WasmInstr::MultiplyI32);
         }
         BinaryOp {
             operator,
@@ -116,22 +163,23 @@ fn compile_expression<'a>(
                 compile_expression(expr, &mut instr)?;
             }
 
-            instr.push(WasmInstruction::Call(name));
+            instr.push(WasmInstr::Call(name));
         }
     };
 
     Ok(())
 }
 
-fn binary_op_to_wasm_instruction<'a>(op: BinaryOperator) -> WasmInstruction<'a> {
+fn binary_op_to_wasm_instruction<'a>(op: BinaryOperator) -> WasmInstr<'a> {
     use BinaryOperator::*;
-    use WasmInstruction::*;
+    use WasmInstr::*;
 
     match op {
         Plus => AddI32,
         Minus => MinusI32,
         Multiply => MultiplyI32,
         Divide => SignedDivideI32,
+        DoubleEquals => EqualI32,
     }
 }
 

@@ -1,9 +1,9 @@
-use super::ast::*;
-use super::binding_power::*;
-use super::operators::*;
-use super::tokeniser::{self, *};
-use super::tokens::Token::*;
-use super::tokens::*;
+use crate::ast::*;
+use crate::binding_power::*;
+use crate::keywords::*;
+use crate::operators::*;
+use crate::tokeniser::{self, *};
+use crate::tokens::*;
 use std::iter::Peekable;
 
 pub type Result<'a, X> = std::result::Result<X, ParseError<'a>>;
@@ -25,11 +25,7 @@ impl<'a> Iterator for Parser<'a> {
     type Item = Result<'a, TopLevelStatement<'a>>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.tokens.peek().is_some() {
-            return Some(self.top_level_statement(false));
-        }
-
-        None
+        self.top_level_statement(false).transpose()
     }
 }
 
@@ -51,52 +47,58 @@ impl<'a> Parser<'a> {
     fn parse(&mut self) -> Result<'a, Ast<'a>> {
         let mut ast = Ast::default();
 
-        while let Some(_) = self.peek_next_token()? {
-            ast.append_statement(self.top_level_statement(false)?);
-        }
+        loop {
+            let statement = self.top_level_statement(false)?;
 
-        Ok(ast)
+            match statement {
+                Some(s) => ast.append_statement(s),
+                None => return Ok(ast),
+            }
+        }
     }
 
-    fn top_level_statement(&mut self, is_export: bool) -> Result<'a, TopLevelStatement<'a>> {
-        use super::keywords::Keyword::*;
-
+    fn top_level_statement(
+        &mut self,
+        is_export: bool,
+    ) -> Result<'a, Option<TopLevelStatement<'a>>> {
         if let Some(token) = self.step()? {
             match token {
-                Name(name) => Ok(TopLevelStatement::Declaration {
+                Token::Name(name) => Ok(Some(TopLevelStatement::Declaration {
                     decl: self.declaration(name)?,
                     exported: is_export,
-                }),
-                Keyword(Function) => Ok(TopLevelStatement::Declaration {
+                })),
+                Token::Keyword(Keyword::Function) => Ok(Some(TopLevelStatement::Declaration {
                     decl: self.function()?,
                     exported: is_export,
-                }),
-                Keyword(Export) => {
+                })),
+                Token::Keyword(Keyword::Export) => {
                     if is_export {
                         Err(ParseError::UnexpectedToken(token, "export specified twice"))
                     } else {
                         self.top_level_statement(true)
                     }
                 }
+                Token::Keyword(Keyword::If) => todo!(),
                 token => Err(ParseError::UnexpectedToken(token, "top level statement")),
             }
         } else {
-            Err(ParseError::UnexpectedEndOfInput)
+            Ok(None)
         }
     }
 
-    fn func_body_statement(&mut self) -> Result<'a, FuncBodyStatement<'a>> {
-        use super::keywords::Keyword::*;
-
+    fn func_body_statement(&mut self) -> Result<'a, CodeBlockStatement<'a>> {
         if let Some(token) = self.step()? {
             match token {
-                Name(name) => self.named_statement(name),
-                Keyword(Function) => self.function().map(FuncBodyStatement::Declaration),
-                Constant(_) => Ok(FuncBodyStatement::BareExpression(
-                    self.expression(0, Some(token))?,
+                Token::Name(name) => self.named_statement(name),
+                Token::Keyword(Keyword::Function) => {
+                    self.function().map(CodeBlockStatement::Declaration)
+                }
+                Token::Keyword(Keyword::If) => self.if_statement(),
+                Token::Constant(_) => Ok(CodeBlockStatement::BareExpression(
+                    self.expression(None, Some(token))?,
                 )),
-                OpenParen => Ok(FuncBodyStatement::BareExpression(
-                    self.expression(0, Some(token))?,
+                Token::OpenParen => Ok(CodeBlockStatement::BareExpression(
+                    self.expression(None, Some(token))?,
                 )),
                 token => Err(ParseError::UnexpectedToken(token, "function body")),
             }
@@ -107,28 +109,30 @@ impl<'a> Parser<'a> {
 
     fn declaration(&mut self, name: &'a str) -> Result<'a, Declaration<'a>> {
         match self.step()? {
-            Some(Equals) => Ok(Declaration::Assignment {
+            Some(Token::Equals) => Ok(Declaration::Assignment {
                 name,
-                expr: self.expression(0, None)?,
+                expr: self.expression(None, None)?,
             }),
             Some(t) => Err(ParseError::UnexpectedToken(t, "top level assignment")),
             None => Err(ParseError::UnexpectedEndOfInput),
         }
     }
 
-    fn named_statement(&mut self, name: &'a str) -> Result<'a, FuncBodyStatement<'a>> {
+    fn named_statement(&mut self, name: &'a str) -> Result<'a, CodeBlockStatement<'a>> {
         use self::Declaration::*;
-        use FuncBodyStatement::*;
+        use CodeBlockStatement::*;
 
-        if let Some(Equals) = self.peek_next_token()? {
+        if let Some(Token::Equals) = self.peek_next_token()? {
             self.step()?;
 
             Ok(Declaration(Assignment {
                 name,
-                expr: self.expression(0, None)?,
+                expr: self.expression(None, None)?,
             }))
         } else {
-            Ok(BareExpression(self.expression(0, Some(Token::Name(name)))?))
+            Ok(BareExpression(
+                self.expression(None, Some(Token::Name(name)))?,
+            ))
         }
     }
 
@@ -137,13 +141,13 @@ impl<'a> Parser<'a> {
 
         while let Some(token) = self.step()? {
             match token {
-                CloseParen => {
+                Token::CloseParen => {
                     return Ok(Expression::FunctionCall { name, args });
                 }
                 _ => {
-                    args.push(self.expression(0, Some(token))?);
+                    args.push(self.expression(None, Some(token))?);
 
-                    if let Some(Comma) = self.peek_next_token()? {
+                    if let Some(Token::Comma) = self.peek_next_token()? {
                         self.step()?;
                     }
                 }
@@ -155,7 +159,7 @@ impl<'a> Parser<'a> {
 
     fn function(&mut self) -> Result<'a, Declaration<'a>> {
         match self.step()? {
-            Some(Name(name)) => {
+            Some(Token::Name(name)) => {
                 let arguments = self.function_arguments_list()?;
                 let body = self.function_body()?;
 
@@ -171,13 +175,13 @@ impl<'a> Parser<'a> {
 
     fn function_arguments_list(&mut self) -> Result<'a, FunctionArgsList<'a>> {
         match self.step()? {
-            Some(OpenParen) => {
+            Some(Token::OpenParen) => {
                 let mut args = Vec::new();
 
                 while let Some(token) = self.step()? {
                     match token {
-                        Name(name) => args.push(self.func_arg(name)?),
-                        CloseParen => return Ok(FunctionArgsList { args }),
+                        Token::Name(name) => args.push(self.func_arg(name)?),
+                        Token::CloseParen => return Ok(FunctionArgsList { args }),
                         _ => return Err(ParseError::ErrorParsingFunctionArgs),
                     }
                 }
@@ -189,24 +193,24 @@ impl<'a> Parser<'a> {
     }
 
     fn func_arg(&mut self, name: &'a str) -> Result<'a, FunctionArg<'a>> {
-        if let Some(Comma) = self.peek_next_token()? {
+        if let Some(Token::Comma) = self.peek_next_token()? {
             self.step()?;
         }
 
         Ok(FunctionArg { name })
     }
 
-    fn function_body(&mut self) -> Result<'a, Vec<FuncBodyStatement<'a>>> {
+    fn function_body(&mut self) -> Result<'a, Vec<CodeBlockStatement<'a>>> {
         let mut statements = Vec::new();
 
         match self.step()? {
-            Some(IndentIncr) => {}
+            Some(Token::IndentIncr) => {}
             _ => return Err(ParseError::IndentExpectedError),
         }
 
         while let Some(token) = self.peek_next_token()? {
             match token {
-                IndentDecr => {
+                Token::IndentDecr => {
                     self.step()?;
                     return Ok(statements);
                 }
@@ -217,9 +221,45 @@ impl<'a> Parser<'a> {
         Err(ParseError::UnexpectedEndOfInput)
     }
 
+    fn if_statement(&mut self) -> Result<'a, CodeBlockStatement<'a>> {
+        // if keyword has already been consumed
+
+        let condition = self.expression(None, None)?;
+
+        let block = self.function_body()?;
+
+        let mut cases = vec![IfStatementCase { condition, block }];
+
+        let mut else_case = None;
+
+        while let Some(Token::Keyword(Keyword::Else)) = self.peek_next_token()? {
+            self.step()?;
+
+            match self.peek_next_token()? {
+                Some(Token::Keyword(Keyword::If)) => {
+                    self.step()?;
+
+                    let condition = self.expression(None, None)?;
+                    let block = self.function_body()?;
+
+                    cases.push(IfStatementCase { condition, block });
+                }
+                _ => {
+                    let block = self.function_body()?;
+
+                    else_case = Some(Box::new(block));
+
+                    break;
+                }
+            }
+        }
+
+        Ok(CodeBlockStatement::IfStatement { cases, else_case })
+    }
+
     fn expression(
         &mut self,
-        right_binding_power: u32,
+        right_binding_power: Option<BindingPower>,
         first_token: Option<Token<'a>>,
     ) -> Result<'a, Expression<'a>> {
         let mut current_token = match first_token {
@@ -231,7 +271,7 @@ impl<'a> Parser<'a> {
 
         let mut left = self.null_denotation(current_token)?;
 
-        while right_binding_power < self.next_token_binding_power() {
+        while right_binding_power.unwrap_or_default() < self.next_token_binding_power() {
             current_token = self
                 .step()?
                 .map_or(Err(ParseError::UnexpectedEndOfInput), Ok)?;
@@ -242,10 +282,10 @@ impl<'a> Parser<'a> {
         Ok(left)
     }
 
-    fn next_token_binding_power(&mut self) -> u32 {
+    fn next_token_binding_power(&mut self) -> BindingPower {
         match self.peek_next_token() {
             Ok(Some(token)) => token.binding_power(),
-            _ => 0,
+            _ => BindingPower::default(),
         }
     }
 
@@ -255,8 +295,8 @@ impl<'a> Parser<'a> {
         left: Expression<'a>,
     ) -> Result<'a, Expression<'a>> {
         match token {
-            BinOp(operator) => {
-                let right = self.expression(token.binding_power(), None)?;
+            Token::BinOp(operator) => {
+                let right = self.expression(Some(token.binding_power()), None)?;
 
                 Ok(Expression::BinaryOp {
                     operator,
@@ -270,23 +310,23 @@ impl<'a> Parser<'a> {
 
     fn null_denotation(&mut self, token: Token<'a>) -> Result<'a, Expression<'a>> {
         match token {
-            Constant(c) => Ok(Expression::Constant(c)),
-            Name(name) => {
-                if let Some(OpenParen) = self.peek_next_token()? {
+            Token::Constant(c) => Ok(Expression::Constant(c)),
+            Token::Name(name) => {
+                if let Some(Token::OpenParen) = self.peek_next_token()? {
                     self.step()?;
                     self.function_call(name)
                 } else {
                     Ok(Expression::Variable(name))
                 }
             }
-            BinOp(BinaryOperator::Minus) => {
-                Ok(Expression::Negation(Box::new(self.expression(100, None)?)))
-            }
-            OpenParen => {
-                let expr = self.expression(token.binding_power(), None)?;
+            Token::BinOp(BinaryOperator::Minus) => Ok(Expression::Negation(Box::new(
+                self.expression(Some(BindingPower::negation()), None)?,
+            ))),
+            Token::OpenParen => {
+                let expr = self.expression(Some(token.binding_power()), None)?;
 
                 match self.step()? {
-                    Some(CloseParen) => Ok(expr),
+                    Some(Token::CloseParen) => Ok(expr),
                     Some(token) => Err(ParseError::UnexpectedToken(
                         token,
                         "parsing expression in brackets",
@@ -310,6 +350,7 @@ pub enum ParseError<'a> {
     FunctionParseError,
     ErrorParsingFunctionArgs,
     IndentExpectedError,
+    IfStatementBodyExpected,
 }
 
 impl<'a> From<TokeniserError> for ParseError<'a> {

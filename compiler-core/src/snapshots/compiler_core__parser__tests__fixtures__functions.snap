@@ -26,10 +26,10 @@ Ok(
                             Assignment {
                                 name: "y",
                                 expr: BinaryOp {
-                                    operator: Multiply,
                                     left: Variable(
                                         "x",
                                     ),
+                                    operator: Multiply,
                                     right: Constant(
                                         Int(
                                             2,
@@ -73,10 +73,10 @@ Ok(
                                 body: [
                                     BareExpression(
                                         BinaryOp {
-                                            operator: Multiply,
                                             left: Variable(
                                                 "x",
                                             ),
+                                            operator: Multiply,
                                             right: Constant(
                                                 Int(
                                                     2,
@@ -112,10 +112,10 @@ Ok(
                     body: [
                         BareExpression(
                             BinaryOp {
-                                operator: Multiply,
                                 left: Variable(
                                     "x",
                                 ),
+                                operator: Multiply,
                                 right: Variable(
                                     "y",
                                 ),
@@ -138,18 +138,18 @@ Ok(
                     body: [
                         BareExpression(
                             BinaryOp {
-                                operator: Plus,
                                 left: BinaryOp {
-                                    operator: Multiply,
                                     left: Constant(
                                         Int(
                                             2,
                                         ),
                                     ),
+                                    operator: Multiply,
                                     right: Variable(
                                         "x",
                                     ),
                                 },
+                                operator: Plus,
                                 right: Constant(
                                     Int(
                                         1,

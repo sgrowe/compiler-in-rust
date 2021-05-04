@@ -20,12 +20,12 @@ Ok(
                 decl: Assignment {
                     name: "y",
                     expr: BinaryOp {
-                        operator: Plus,
                         left: Constant(
                             Int(
                                 5,
                             ),
                         ),
+                        operator: Plus,
                         right: Constant(
                             Int(
                                 2,
@@ -39,10 +39,10 @@ Ok(
                 decl: Assignment {
                     name: "z",
                     expr: BinaryOp {
-                        operator: Minus,
                         left: Variable(
                             "x",
                         ),
+                        operator: Minus,
                         right: Constant(
                             Int(
                                 3,
@@ -56,24 +56,24 @@ Ok(
                 decl: Assignment {
                     name: "z",
                     expr: BinaryOp {
-                        operator: Minus,
                         left: BinaryOp {
-                            operator: Plus,
                             left: Constant(
                                 Int(
                                     2,
                                 ),
                             ),
+                            operator: Plus,
                             right: BinaryOp {
-                                operator: Multiply,
                                 left: Variable(
                                     "y",
                                 ),
+                                operator: Multiply,
                                 right: Variable(
                                     "z",
                                 ),
                             },
                         },
+                        operator: Minus,
                         right: Constant(
                             Int(
                                 4,
@@ -87,17 +87,17 @@ Ok(
                 decl: Assignment {
                     name: "w",
                     expr: BinaryOp {
-                        operator: Multiply,
                         left: Constant(
                             Int(
                                 2,
                             ),
                         ),
+                        operator: Multiply,
                         right: BinaryOp {
-                            operator: Plus,
                             left: Variable(
                                 "x",
                             ),
+                            operator: Plus,
                             right: Constant(
                                 Int(
                                     1,
@@ -112,18 +112,18 @@ Ok(
                 decl: Assignment {
                     name: "v",
                     expr: BinaryOp {
-                        operator: Plus,
                         left: BinaryOp {
-                            operator: Multiply,
                             left: Constant(
                                 Int(
                                     2,
                                 ),
                             ),
+                            operator: Multiply,
                             right: Variable(
                                 "x",
                             ),
                         },
+                        operator: Plus,
                         right: Constant(
                             Int(
                                 1,

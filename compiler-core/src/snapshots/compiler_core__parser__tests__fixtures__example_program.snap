@@ -21,10 +21,10 @@ Ok(
                     body: [
                         BareExpression(
                             BinaryOp {
-                                operator: Plus,
                                 left: Variable(
                                     "x",
                                 ),
+                                operator: Plus,
                                 right: Variable(
                                     "y",
                                 ),
@@ -61,18 +61,18 @@ Ok(
                             Assignment {
                                 name: "y",
                                 expr: BinaryOp {
-                                    operator: Plus,
                                     left: BinaryOp {
-                                        operator: Plus,
                                         left: Variable(
                                             "x",
                                         ),
+                                        operator: Plus,
                                         right: Constant(
                                             Int(
                                                 2,
                                             ),
                                         ),
                                     },
+                                    operator: Plus,
                                     right: Variable(
                                         "t",
                                     ),
@@ -81,10 +81,10 @@ Ok(
                         ),
                         BareExpression(
                             BinaryOp {
-                                operator: Multiply,
                                 left: Variable(
                                     "x",
                                 ),
+                                operator: Multiply,
                                 right: Variable(
                                     "y",
                                 ),
@@ -103,9 +103,7 @@ Ok(
                     body: [
                         BareExpression(
                             BinaryOp {
-                                operator: Multiply,
                                 left: BinaryOp {
-                                    operator: Minus,
                                     left: FunctionCall {
                                         name: "add",
                                         args: [
@@ -121,12 +119,14 @@ Ok(
                                             ),
                                         ],
                                     },
+                                    operator: Minus,
                                     right: Constant(
                                         Int(
                                             1,
                                         ),
                                     ),
                                 },
+                                operator: Multiply,
                                 right: Constant(
                                     Int(
                                         2,
