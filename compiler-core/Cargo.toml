@@ -20,7 +20,7 @@ tinyvec = { version = "1.2.0", features = ["alloc"] }
 anyhow = "1.0.40"
 criterion = "0.3.4"
 insta = "1.7.1"
-test-case = "1.1.0"
+test-case = "2.0.1"
 wasmtime = "0.26.0"
 
 
